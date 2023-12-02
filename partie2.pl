@@ -29,3 +29,30 @@ suite(R,Abi,Abi1,Tbox) :-
 acquisition_prop_type1
 /* 2e cas */ 
 acquisition_prop_type2
+
+% Acquisition et traitement d''une proposition de type 1 
+acquisition_prop_type1(Abi, Abi1, Tbox) :-
+    write('Entrez l"identificateur de l"instance (par exemple, michelAnge) : '), read(Instance),
+    write('Entrez le concept (par exemple, personne) : '), read(Concept),
+    process_prop_type1(Instance, Concept, Abi, Abi1, Tbox).
+
+process_prop_type1(Instance, Concept, Abi, Abi1, Tbox) :-
+    nnf(not(Concept), NegatedConcept),
+    traitement_Tbox,
+    traitement_Abox,
+    nnf_assertion((Instance, Concept), SimplifiedAssertion),
+    nnf_assertion((Instance, NegatedConcept), SimplifiedNegatedAssertion),
+    append([SimplifiedAssertion, SimplifiedNegatedAssertion], Abi, Abi1).
+
+% Acquisition et traitement d''une proposition de type 2
+acquisition_prop_type2(Abi, Abi1, Tbox) :-
+    write('Entrez le premier concept (par exemple, personne) : '), read(Concept1),
+    write('Entrez le deuxieme concept (par exemple, livre) : '), read(Concept2),
+    process_prop_type2(Concept1, Concept2, Abi, Abi1, Tbox).
+
+process_prop_type2(Concept1, Concept2, Abi, Abi1, Tbox) :-
+    nnf(and(Concept1, Concept2), IntersectedConcept),
+    traitement_Tbox,
+    traitement_Abox,
+    nnf_assertion((anything, IntersectedConcept), SimplifiedAssertion),
+    append([SimplifiedAssertion], Abi, Abi1).
