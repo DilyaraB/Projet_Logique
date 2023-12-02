@@ -12,23 +12,30 @@ nnf(some(R,C),some(R,NC)):- nnf(C,NC),!.
 nnf(all(R,C),all(R,NC)) :- nnf(C,NC),!.
 nnf(X,X).
 
-concept(Tbox, Abox) :-
-    /* Vérifie la correction syntaxique et sémantique des identificateurs, de la Tbox, de la Abox */
-    verify_concepts(cnamea),
-    verify_concepts(cnamena),
-    verify_concepts(iname),
-    verify_concepts(rname),
+/* Vérifie la correction syntaxique et sémantique des identificateurs, de la Tbox, de la Abox */
+concept(C) :- cnamea(C). % Vérification des concepts atomique
+concept(CG) :- cnamena(CG). % Vérification des concepts non atomique
+instance(I) :- iname(I). % Vérification des identificateurs dinstance
+role(R) :- rname(R). % Vérification des identificateurs de rôle.
 
-    verify_tbox(Tbox, SimplifiedTbox),
+concept(not(C)) :- concept(C).
+concept(and(C1, C2)) :- concept(C1), concept(C2).
+concept(or(C1, C2)) :- concept(C1), concept(C2).
+concept(some(R, C)) :- role(R), concept(C).
+concept(all(R, C)) :- role(R), concept(C).
 
+concept(Tbox) :-
+    verify_tbox(Tbox, SimplifiedTbox).
+
+concept(Abox) :-
     verify_abox(Abox, SimplifiedAbox).
 
 /* Vérifie la correction syntaxique et sémantique de la Tbox */
-verify_tbox(Tbox, SimplifiedTbox) :-
-    write('Vérification de la Tbox...'), nl,
-    /* Appliquer nnf à chaque équivalence dans la Tbox, vérifier l'absence de concepts auto-référents */
-    maplist(nnf_equivalence, Tbox, SimplifiedTbox),
-    maplist(check_auto_ref, SimplifiedTbox).
+verify_tbox([], []).
+verify_tbox([(CA, CG) | TboxTail], [(CA, SimplifiedCG) | SimplifiedTboxTail]) :-
+    nnf_equivalence(CG, SimplifiedCG),
+    check_auto_ref((CA, SimplifiedCG)),
+    verify_tbox(TboxTail, SimplifiedTboxTail).
 
 /* Vérifie la correction syntaxique et sémantique de la Abox */
 verify_abox(Abox, SimplifiedAbox) :-
