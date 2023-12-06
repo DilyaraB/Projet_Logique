@@ -1,3 +1,4 @@
+
 programme :- premiere_etape(Tbox,Abi,Abr),
             deuxieme_etape(Abi,Abi1,Tbox),
             troisieme_etape(Abi1,Abr).
@@ -51,4 +52,21 @@ acquisition_prop_type2(Abi, Abi1, Tbox) :-
         nl, write('L\'un ou/et deux de concepts n\'existe pas. Veuillez réessayer.'), nl
     ).
 
+:- dynamic compteur/1.
+
+% Initialiser le compteur
+init_compteur :- assert(compteur(1)).
+
+% Prédicat pour générer une nouvelle instance pour la quantification existentielle
+generate_new_instance(Instance) :-
+    retract(compteur(Counter)),
+    NewCounter is Counter + 1,
+    assert(compteur(NewCounter)),
+    atom_concat('inst_', NewCounter, Instance).
+
 process_prop_type2(Concept1, Concept2, Abi, Abi1) :-
+    generate_new_instance(I),
+    replace_concept(and(Concept1, Concept2), and(SimplifiedC1, SimplifiedC2), []),
+    nnf(SimplifiedC1, NormalizedConcept1),
+    nnf(SimplifiedC2, NormalizedConcept2),
+    append(Abi, [(I, and(NormalizedConcept1, NormalizedConcept2))], Abi1).
