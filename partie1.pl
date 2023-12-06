@@ -25,88 +25,73 @@ concept(some(R, C)) :- role(R), concept(C).
 concept(all(R, C)) :- role(R), concept(C).
 
 concept(Tbox) :-
-    verify_tbox(Tbox, SimplifiedTbox).
+    verify_tbox(Tbox).
 
 concept(Abox) :-
-    verify_abox(Abox, SimplifiedAbox).
+    verify_abox(Abox).
 
-/* Vérifie la correction syntaxique et sémantique de la Tbox */
-verify_tbox([], []).
-verify_tbox([(CA, CG) | TboxTail], [(CA, SimplifiedCG) | SimplifiedTboxTail]) :-
-    nnf_equivalence(CG, SimplifiedCG),
-    check_auto_ref((CA, SimplifiedCG)),
-    verify_tbox(TboxTail, SimplifiedTboxTail).
+% Verify Tbox
+verify_tbox([]).
+verify_tbox([(C1, C2)|Rest]) :-
+    cnamena(C1),
+    concept(C2),
+    verify_tbox(Rest).
 
-/* Vérifie la correction syntaxique et sémantique de la Abox */
-verify_abox(Abox, SimplifiedAbox) :-
-    write('Vérification de la Abox...'), nl,
-    /* Partitionner Abox en assertions de concepts et de rôles, Appliquer nnf aux assertions de concepts et de roles, Réassembler les assertions de concepts et de rôles, Vérifier l'absence de concepts auto-référents dans la Abox */
-    partition(assertion_concept, Abox, ConceptAssertions, RoleAssertions),
-    
-    maplist(nnf_assertion, ConceptAssertions, SimplifiedConceptAssertions),
+% Verify Abox
+verify_abox([]).
 
-    maplist(nnf_assertion, RoleAssertions, SimplifiedRoleAssertions),
-    
-    append(SimplifiedConceptAssertions, SimplifiedRoleAssertions, SimplifiedAbox),
+verify_abox([(I, C)|Rest]) :-
+    instance(I),
+    concept(C),
+    verify_abox(Rest).
 
-    maplist(check_auto_ref, SimplifiedAbox).
+verify_abox([(I1, I2, R) | Rest]) :- 
+    instance(I1),
+    instance(I2),
+    role(R),
+    verify_abox(Rest).
+
 
 /* Remarque 1 */
 
-pas_autoref(Concept, Expression) :-
-    /* Obtient la liste des identificateurs de concepts complexes dans l'expression et Vérifie si Concept n'est pas dans la liste des concepts complexes */
-    setof(ComplexConcept, get_complex_concepts(Expression), ComplexConcepts),
-    member(Concept, ComplexConcepts).
+pas_autoref(ConceptID, ConceptExpression) :-
+    \+ autoref(ConceptID, []).
 
-/* Obtient la liste des identificateurs de concepts complexes dans une expression */
-get_complex_concepts(and(C1, C2), Concepts) :-
-    get_complex_concepts(C1, Concepts1),
-    get_complex_concepts(C2, Concepts2),
-    append(Concepts1, Concepts2, Concepts).
+autoref(Concept, Visited) :-
+    replace_concept(Concept, SimplifiedC, Visited),
+    member(Concept, SimplifiedC).
 
-get_complex_concepts(or(C1, C2), Concepts) :-
-    get_complex_concepts(C1, Concepts1),
-    get_complex_concepts(C2, Concepts2),
-    append(Concepts1, Concepts2, Concepts).
+/* Remarque 3,4 */
 
-get_complex_concepts(not(C), Concepts) :-
-    get_complex_concepts(C, Concepts).
+/* si le concept est atomique alors concept simplifie est lui meme */
+replace_concept(AtomicC, AtomicC, Visited) :- cnamea(AtomicC).
 
-get_complex_concepts(some(_, C), Concepts) :-
-    get_complex_concepts(C, Concepts).
+replace_concept(ComplexC, SimplifiedC, Visited) :-
+    /* on trouve equivalence de concept non atomique, on verifie bien s'il est en ce Tbox, apres on continue recursivement remplacer les autres concepts non atomique dans la definition */ 
+    \+ member(ComplexC, Visited), % pour eviter boucle infini
+    equiv(ComplexC, Def),
+    replace_concept(Def, SimplifiedC, [ComplexC|Visited]).
 
-get_complex_concepts(all(_, C), Concepts) :-
-    get_complex_concepts(C, Concepts).
+replace_concept(not(C), not(SimplifiedC), Visited) :-
+    replace_concept(C, SimplifiedC, Visited).
 
-get_complex_concepts(Concept, [Concept]) :-
-    cnamena(Concept).  
+replace_concept(and(C1, C2), and(S1, S2), Visited) :-
+    replace_concept(C1, S1, Visited),
+    replace_concept(C2, S2, Visited)).
 
-/* Remarque 3 */
-traitement_Tbox(Tbox, SimplifiedTbox) :-
-    write('Traitement de la Tbox...'), nl,
-    /* Appliquer nnf à chaque équivalence dans la Tbox */
-    maplist(nnf_equivalence, Tbox, SimplifiedTbox).
+replace_concept(or(C1, C2), or(S1, S2), Visited)) :-
+    replace_concept(C1, S1, Visited)),
+    replace_concept(C2, S2, Visited)).
 
-/* Appliquer nnf à une équivalence (Tuple) dans la Tbox */
-nnf_equivalence((Concept, Expression), (Concept, SimplifiedExpression)) :-
-    nnf(Expression, SimplifiedExpression).
+replace_concept(some(R, C), some(R, SimplifiedC), Visited)) :-
+    replace_concept(C, SimplifiedC, Visited)).
 
-/* Remarque 4 */
-traitement_Abox(Abox, SimplifiedAbox) :-
-    write('Traitement de la Abox...'), nl,
-    /* Partitionner Abox en assertions de concepts et de rôles, appliquer nnf aux assertions de concepts et de roles et tout a la fin réassembler les assertions de concepts et de rôles */
-    partition(assertion_concept, Abox, ConceptAssertions, RoleAssertions),
+replace_concept(all(R, C), all(R, SimplifiedC), Visited)) :-
+    replace_concept(C, SimplifiedC, Visited)).
 
-    maplist(nnf_assertion, ConceptAssertions, SimplifiedConceptAssertions),
-    
-    maplist(nnf_assertion, RoleAssertions, SimplifiedRoleAssertions),
-    
-    append(SimplifiedConceptAssertions, SimplifiedRoleAssertions, SimplifiedAbox).
-
-/* Appliquer nnf à une assertion dans la Abox */
-nnf_assertion((X, Y, Z), (X, Y, SimplifiedZ)) :-
-    nnf(Z, SimplifiedZ).
-
-/* Vérifier si une assertion est de concept */
-assertion_concept((_, _, Concept)) :-
-    cnamena(Concept).
+/* traitement_box prend en parametre tbox/abox et tbox/abox simplifie Pour simplifier les concepts il utilise le predicat replace_concept et il utilise apres le predicat nnf pour mettre le concept simplifie en forme normale negative  */
+traitement_box([], []).
+traitement_box([(X, Concept) | Rest], [(X, NewConcept) | Result]) :-
+    replace_concept(Concept, Atomique, []),
+    nnf(Atomique, NewConcept),
+    traitement_box(Rest, Result).
