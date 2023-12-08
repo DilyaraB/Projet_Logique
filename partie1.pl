@@ -13,11 +13,12 @@ nnf(all(R,C),all(R,NC)) :- nnf(C,NC),!.
 nnf(X,X).
 
 /* Vérifie la correction syntaxique et sémantique des identificateurs, de la Tbox, de la Abox */
-concept(C) :- cnamea(C). % Vérification des concepts atomique
-concept(CG) :- cnamena(CG). % Vérification des concepts non atomique
+
 instance(I) :- iname(I). % Vérification des identificateurs dinstance
 role(R) :- rname(R). % Vérification des identificateurs de rôle.
 
+concept(C) :- cnamea(C). % Vérification des concepts atomique
+concept(CG) :- cnamena(CG). % Vérification des concepts non atomique
 concept(not(C)) :- concept(C).
 concept(and(C1, C2)) :- concept(C1), concept(C2).
 concept(or(C1, C2)) :- concept(C1), concept(C2).
@@ -54,17 +55,13 @@ verify_abox([(I1, I2, R) | Rest]) :-
 
 /* Remarque 1 */
 
-pas_autoref(ConceptID, ConceptExpression) :-
-    \+ autoref(ConceptID, []).
-
-autoref(Concept, Visited) :-
-    replace_concept(Concept, SimplifiedC, Visited),
-    member(Concept, SimplifiedC).
+pas_autoref(Concept) :-
+    replace_concept(Concept, _, []), !.
 
 /* Remarque 3,4 */
 
 /* si le concept est atomique alors concept simplifie est lui meme */
-replace_concept(AtomicC, AtomicC, Visited) :- cnamea(AtomicC).
+replace_concept(AtomicC, AtomicC, _) :- cnamea(AtomicC).
 
 replace_concept(ComplexC, SimplifiedC, Visited) :-
     /* on trouve equivalence de concept non atomique, on verifie bien s'il est en ce Tbox, apres on continue recursivement remplacer les autres concepts non atomique dans la definition */ 
@@ -77,21 +74,21 @@ replace_concept(not(C), not(SimplifiedC), Visited) :-
 
 replace_concept(and(C1, C2), and(S1, S2), Visited) :-
     replace_concept(C1, S1, Visited),
-    replace_concept(C2, S2, Visited)).
+    replace_concept(C2, S2, Visited).
 
-replace_concept(or(C1, C2), or(S1, S2), Visited)) :-
-    replace_concept(C1, S1, Visited)),
-    replace_concept(C2, S2, Visited)).
+replace_concept(or(C1, C2), or(S1, S2), Visited) :-
+    replace_concept(C1, S1, Visited),
+    replace_concept(C2, S2, Visited).
 
-replace_concept(some(R, C), some(R, SimplifiedC), Visited)) :-
-    replace_concept(C, SimplifiedC, Visited)).
+replace_concept(some(R, C), some(R, SimplifiedC), Visited) :-
+    replace_concept(C, SimplifiedC, Visited).
 
-replace_concept(all(R, C), all(R, SimplifiedC), Visited)) :-
-    replace_concept(C, SimplifiedC, Visited)).
+replace_concept(all(R, C), all(R, SimplifiedC), Visited) :-
+    replace_concept(C, SimplifiedC, Visited).
 
 /* traitement_box prend en parametre tbox/abox et tbox/abox simplifie Pour simplifier les concepts il utilise le predicat replace_concept et il utilise apres le predicat nnf pour mettre le concept simplifie en forme normale negative  */
 traitement_box([], []).
 traitement_box([(X, Concept) | Rest], [(X, NewConcept) | Result]) :-
     replace_concept(Concept, Atomique, []),
     nnf(Atomique, NewConcept),
-    traitement_box(Rest, Result).
+    traitement_box(Rest, Result), !.

@@ -4,7 +4,14 @@ programme :- premiere_etape(Tbox,Abi,Abr),
             troisieme_etape(Abi1,Abr).
 
 /* Partie 1 de l'énoncé */
-premiere_etape(LTBox, LABox, LRoles, Res)
+premiere_etape(LTBox, LABox, LRoles) :- 
+    verify_tbox(LTBox), 
+    verify_abox(LABox), 
+    verify_abox(LRoles), 
+    pas_autoref(),
+    traitement_box(LTBox),
+    traitement_box(LABox).
+
 /* Partie 2 de l'énoncé (partiellement complété) */
 deuxieme_etape(Abi, Abi1, TBox) :- saisie_et_traitement_prop_a_demontrer(Abi,Abi1,Tbox).
 /* Partie 3 de l'énoncé */
