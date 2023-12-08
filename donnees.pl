@@ -87,3 +87,5 @@ chiffre_car(6,'6').
 chiffre_car(7,'7').
 chiffre_car(8,'8').
 chiffre_car(9,'9').
+
+/*flatten(Liste1,Liste2).*/
