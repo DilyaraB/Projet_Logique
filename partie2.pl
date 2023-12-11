@@ -7,13 +7,15 @@ programme :- premiere_etape(Tbox,Abi,Abr),
 premiere_etape(LTBox, LABox, LRoles) :- 
     verify_tbox(LTBox), 
     verify_abox(LABox), 
-    verify_abox(LRoles), 
-    pas_autoref(),
+    verify_abox(LRoles),
+    setof(X, cnamena(X), Lcno),
+    pas_autoref(Lcno),
     traitement_box(LTBox),
     traitement_box(LABox).
 
 /* Partie 2 de l'énoncé (partiellement complété) */
 deuxieme_etape(Abi, Abi1, TBox) :- saisie_et_traitement_prop_a_demontrer(Abi,Abi1,Tbox).
+
 /* Partie 3 de l'énoncé */
 troisieme_etape(LABox2, LRoles)
 
