@@ -28,6 +28,14 @@ Roles
 
 [(michelAnge, david, aCree), (michelAnge, sonnet, aEcrit),(vinci,joconde, aCree)]
 
+Noms 
+
+Lie : Liste Il Existe
+Lpt : Liste Pour Tout
+Li : Liste Intersection
+Lu : Liste Union
+Ls : Liste ?
+
 */
 
 compteur(1).
@@ -35,115 +43,139 @@ troisieme_etape(Abi,Abr) :-
     tri_Abox(Abi,Lie,Lpt,Li,Lu,Ls),
     resolution(Lie,Lpt,Li,Lu,Ls,Abr),
     nl,
-    write('Youpiiiiii, on a demontre la proposition initiale !!!').
+    write('Youpiiiiii, on a demontre la proposition initiale !!!'),!.
 
 /* tri_Abox */
 
 tri_Abox([], [], [], [], [], []).
 
 tri_Abox([(I, some(R, C))|L], [(I, some(R, C))|Lie], Lpt, Li, Lu, Ls) :-
-    tri_Abox(L, Lie, Lpt, Li, Lu, Ls).
+    tri_Abox(L, Lie, Lpt, Li, Lu, Ls),!.
 
 tri_Abox([(I, all(R, C))|L], Lie, [(I, all(R, C))|Lpt], Li, Lu, Ls) :-
-    tri_Abox(L, Lie, Lpt, Li, Lu, Ls).
+    tri_Abox(L, Lie, Lpt, Li, Lu, Ls),!.
 
 tri_Abox([(I, and(C1, C2))|L], Lie, Lpt, [(I, and(C1, C2))|Li], Lu, Ls) :-
-    tri_Abox(L, Lie, Lpt, Li, Lu, Ls).
+    tri_Abox(L, Lie, Lpt, Li, Lu, Ls),!.
 
 tri_Abox([(I, or(C1, C2))|L], Lie, Lpt, Li, [(I, or(C1, C2))|Lu], Ls) :-
-    tri_Abox(L, Lie, Lpt, Li, Lu, Ls).
+    tri_Abox(L, Lie, Lpt, Li, Lu, Ls),!.
 
 tri_Abox([(I, C)|L], Lie, Lpt, Li, Lu, [(I, C)|Ls]) :-
     setof(X, cnamea(X), Lca),
     member(C, Lca),
-    tri_Abox(L, Lie, Lpt, Li, Lu, Ls).
+    tri_Abox(L, Lie, Lpt, Li, Lu, Ls),!.
 
 tri_Abox([(I, not(C))|L], Lie, Lpt, Li, Lu, [(I, not(C))|Ls]) :-
-    tri_Abox(L, Lie, Lpt, Li, Lu, Ls).
+    tri_Abox(L, Lie, Lpt, Li, Lu, Ls),!.
 
 /* resolution */
 
-
-/*resolution(Lie,Lpt,Li,Lu,Ls,Abr) :-
-    complete_some(Lie,Lpt,Li,Lu,Ls,Abr),
-    transformation_and(Lie,Lpt,Li,Lu,Ls,Abr),
-    deduction_all(Lie,Lpt,Li,Lu,Ls,Abr),
-    transformation_or(Lie,Lpt,Li,Lu,Ls,Abr).*/
+resolution([],[],[],[],[],[]).
 
 resolution(Lie,Lpt,Li,Lu,Ls,Abr) :-
-    is_clash(Abr),
     complete_some(Lie,Lpt,Li,Lu,Ls,Abr).
 
-is_clash(Abr) :-
-    member((I, C), Abr),
-    member((I, not(C)), Abr).
+/* 1. clash ? oui ! */
+is_clash(_,_,_,_,Ls,_) :-
+    setof(X, rname(X), Lr),
+    member(R, Lr),
+    member((I1, I2, R), Ls),
+    member((I1, I2, not(R)), Ls).
 
-is_clash(Abr) :-
-    member((I1, I2, R), Abr),
-    member((I1, I2, not(R)), Abr).
+/* 2. clash ? oui ! */
+is_clash(_,_,_,_,Ls,_) :-
+    member((I, C), Ls),
+    member((I, not(C)), Ls).
 
-complete_some([],Lpt,Li,Lu,Ls,Abr) :-
-    transformation_and([],Lpt,Li,Lu,Ls,Abr).
+/* 3. clash ? non ! */
+is_clash(Lie,Lpt,Li,Lu,Ls,Abr) :-
+    evolue(Abr, Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1),
+    resolution(Lie1,Lpt1,Li1,Lu1,Ls1,[]).
 
-complete_some([(I, some(R, C))|Lie],Lpt,Li,Lu,Ls,Res) :-
+/* 4. ∃ non fait */
+complete_some([],Lpt,Li,Lu,Ls,[]) :-
+    transformation_and([],Lpt,Li,Lu,Ls,[]).
+
+/* 5. ∃ fait */
+complete_some([(I, some(R, C))|Lie],Lpt,Li,Lu,Ls,Abr) :-
     setof(X, iname(X), Linst),
     member(I2, Linst),
-    concat([(I, I2, R)], _, Abr2),
-    concat([(I2, R)], Abr2, Res),
-    \+ is_clash(Res),
-    resolution([(I, some(R, C))|Lie],Lpt,Li,Lu,Ls,Res).
+    concat([(I, I2, R), (I2, C)], Abr, Res),
+    is_clash([(I, some(R, C))|Lie],Lpt,Li,Lu,Ls,Res).
 
-complete_some([(I, some(R, C))|_],_,_,_,_,Res) :-
-    setof(X, iname(X), Linst),
-    member(I2, Linst),
-    concat([(I, I2, R)], _, Abr2),
-    concat([(I2, C)], Abr2, Res),
-    is_clash(Res).
+/* 6. ⊓ non fait */
+transformation_and(Lie,Lpt,[],Lu,Ls,[]) :-
+    deduction_all(Lie,Lpt,[],Lu,Ls,[]).
 
-transformation_and(Lie,Lpt,[],Lu,Ls,Abr) :-
-    deduction_all(Lie,Lpt,[],Lu,Ls,Abr).
+/* 7. ⊓ fait */
+transformation_and(Lie,Lpt,[(I, and(C1, C2))|Li],Lu,Ls,Abr) :-
+    concat([(I, C1), (I, C2)], Abr, Res),
+    is_clash(Lie,Lpt,[(I, and(C1, C2))|Li],Lu,Ls,Res).
 
-transformation_and(Lie,Lpt,[(I, and(C1, C2))|Li],Lu,Ls,Res) :-
-    concat([(I, C1)], _, Abr2),
-    concat([(I, C1)], Abr2, Res),
-    \+ is_clash(Res),
-    resolution(Lie,Lpt,[(I, and(C1, C2))|Li],Lu,Ls,Res).
+/* 8. ∀ non fait */
+deduction_all(Lie,[],Li,Lu,Ls,[]) :-
+    transformation_or(Lie,[],Li,Lu,Ls,[]).
 
-transformation_and(_,_,[(I, and(C1, C2))|_],_,_,Res) :-
-    concat([(I, C1)], _, Abr2),
-    concat([(I, C2)], Abr2, Res),
-    is_clash(Res).
-
-deduction_all(Lie,[],Li,Lu,Ls,Abr) :-
-    transformation_or(Lie,[],Li,Lu,Ls,Abr).
-
-deduction_all(Lie,[(I, all(R, C))|Lpt],Li,Lu,Ls,Res) :-
-    enleve((I, all(R, C)), _, Abr2),
+/* 9. ∀ fait */
+deduction_all(Lie,[(I, all(R, C))|Lpt],Li,Lu,Ls,Abr) :-
+    enleve((I, all(R, C)), Abr, Abr2),
     concat([(I, C)], Abr2, Res),
-    \+ is_clash(Res),
-    resolution(Lie,Lpt,Li,Lu,Ls,Res).
+    is_clash(Lie,[(I, all(R, C))|Lpt],Li,Lu,Ls,Res).
 
-deduction_all(_,[(I, all(R, C))|_],_,_,_,Res) :-
-    enleve((I, all(R, C)), _, Abr2),
-    concat([(I, C)], Abr2, Res),
-    is_clash(Res).
+/* 10. ⊔ non fait (rien car on doit retourner false) */
 
-transformation_or(_,_,_,[],_,Abr) :-
-    is_clash(Abr).
-
-transformation_or(Lie,Lpt,Li,[(I, or(C1, C2))|Lu],Ls,Abr) :-
-    enleve((I, or(C1, C2)), Abr, Abr2),
+/* 11.1. ⊔ fait */
+transformation_or(Lie,Lpt,Li,[(I, or(C1, C2))|Lu],Ls,Res1) :-
+    enleve((I, or(C1, C2)), _, Abr2),
     concat([(I, C1)], Abr2, Res1),
-    concat([(I, C2)], Abr2, Res2),
-    resolution(Lie,Lpt,Li,Lu,Ls,Res1),
-    resolution(Lie,Lpt,Li,Lu,Ls,Res2).
+    is_clash(Lie,Lpt,Li,[(I, or(C1, C2))|Lu],Ls,Res1).
 
+/* 11.2. ⊔ fait */
+transformation_or(Lie,Lpt,Li,[(I, or(C1, C2))|Lu],Ls,Res2) :-
+    enleve((I, or(C1, C2)), _, Abr2),
+    concat([(I, C2)], Abr2, Res2),
+    is_clash(Lie,Lpt,Li,[(I, or(C1, C2))|Lu],Ls,Res2).
+
+/* evolue */
+
+evolue([], Lie, Lpt, Li, Lu, Ls, Lie, Lpt, Li, Lu, Ls).
+
+evolue([(I, some(R, C))|L], Lie, Lpt, Li, Lu, Ls, [(I, some(R, C))|Lie1], Lpt1, Li1, Lu1, Ls1) :-
+    evolue(L, Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1),!.
+
+evolue([(I, all(R, C))|L], Lie, Lpt, Li, Lu, Ls, Lie1, [(I, all(R, C))|Lpt1], Li1, Lu1, Ls1) :-
+    evolue(L, Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1),!.
+
+evolue([(I, and(C1, C2))|L], Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, [(I, and(C1, C2))|Li1], Lu1, Ls1) :-
+    evolue(L, Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1),!.
+
+evolue([(I, or(C1, C2))|L], Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, [(I, or(C1, C2))|Lu1], Ls1) :-
+    evolue(L, Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1),!.
+
+evolue([(I, C)|L], Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, [(I, C)|Ls1]) :-
+    setof(X, cnamea(X), Lca),
+    member(C, Lca),
+    evolue(L, Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1),!.
+
+evolue([(I, not(C))|L], Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, [(I, not(C))|Ls1]) :-
+    evolue(L, Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1),!.
+
+/* affiche_evolution_Abox */
 
 /*
-resolution correspond à une branche
+prop_car([], '').
+prop_car([], '') :-
 
-evolue(A, Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1)
-affiche_evolution_Abox(Ls1, Lie1, Lpt1, Li1, Lu1, Abr1, Ls2, Lie2, Lpt2, Li2, Lu2, Abr2)
+
+some_car(_).
+all_car(_).
+and_car(_).
+or_car(_).
+
+affiche_evolution_Abox(Ls1, Lie1, Lpt1, Li1, Lu1, Abr1, Ls2, Lie2, Lpt2, Li2, Lu2, Abr2) :-
+    nl,
+    write('Youpiiiiii, on a demontre la proposition initiale !!!'),!.
 */
 
 /*
