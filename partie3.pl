@@ -4,10 +4,6 @@
     - Pour tout
     - OU
 
-If nouvelle assertion, vérifier si clash, si oui fermer, sinon continuer
-If toutes les branches fermées, insatisfiable et proposition initiale démontrée
-Voir arbre
-
 */
 
 /*
@@ -77,16 +73,18 @@ resolution(Lie,Lpt,Li,Lu,Ls,Abr) :-
     complete_some(Lie,Lpt,Li,Lu,Ls,Abr).
 
 /* 1. clash ? oui ! */
-is_clash(_,_,_,_,Ls,_) :-
+is_clash(Lie, Lpt, Li, Lu, Ls, Abr) :-
     setof(X, rname(X), Lr),
     member(R, Lr),
-    member((I1, I2, R), Ls),
-    member((I1, I2, not(R)), Ls).
+    evolue(Abr, Lie, Lpt, Li, Lu, Ls, _, _, _, _, Ls1),
+    member((I1, I2, R), Ls1),
+    member((I1, I2, not(R)), Ls1).
 
 /* 2. clash ? oui ! */
-is_clash(_,_,_,_,Ls,_) :-
-    member((I, C), Ls),
-    member((I, not(C)), Ls).
+is_clash(Lie, Lpt, Li, Lu, Ls, Abr) :-
+    evolue(Abr, Lie, Lpt, Li, Lu, Ls, _, _, _, _, Ls1),
+    member((I, C), Ls1),
+    member((I, not(C)), Ls1).
 
 /* 3. clash ? non ! */
 is_clash(Lie,Lpt,Li,Lu,Ls,Abr) :-
@@ -102,7 +100,7 @@ complete_some([(I, some(R, C))|Lie],Lpt,Li,Lu,Ls,Abr) :-
     setof(X, iname(X), Linst),
     member(I2, Linst),
     concat([(I, I2, R), (I2, C)], Abr, Res),
-    is_clash([(I, some(R, C))|Lie],Lpt,Li,Lu,Ls,Res).
+    is_clash(Lie,Lpt,Li,Lu,Ls,Res).
 
 /* 6. ⊓ non fait */
 transformation_and(Lie,Lpt,[],Lu,Ls,[]) :-
@@ -111,7 +109,7 @@ transformation_and(Lie,Lpt,[],Lu,Ls,[]) :-
 /* 7. ⊓ fait */
 transformation_and(Lie,Lpt,[(I, and(C1, C2))|Li],Lu,Ls,Abr) :-
     concat([(I, C1), (I, C2)], Abr, Res),
-    is_clash(Lie,Lpt,[(I, and(C1, C2))|Li],Lu,Ls,Res).
+    is_clash(Lie,Lpt,Li,Lu,Ls,Res).
 
 /* 8. ∀ non fait */
 deduction_all(Lie,[],Li,Lu,Ls,[]) :-
@@ -119,23 +117,20 @@ deduction_all(Lie,[],Li,Lu,Ls,[]) :-
 
 /* 9. ∀ fait */
 deduction_all(Lie,[(I, all(R, C))|Lpt],Li,Lu,Ls,Abr) :-
-    enleve((I, all(R, C)), Abr, Abr2),
-    concat([(I, C)], Abr2, Res),
-    is_clash(Lie,[(I, all(R, C))|Lpt],Li,Lu,Ls,Res).
+    concat([(I, C)], Abr, Res),
+    is_clash(Lie,Lpt,Li,Lu,Ls,Res).
 
 /* 10. ⊔ non fait (rien car on doit retourner false) */
 
 /* 11.1. ⊔ fait */
-transformation_or(Lie,Lpt,Li,[(I, or(C1, C2))|Lu],Ls,Res1) :-
-    enleve((I, or(C1, C2)), _, Abr2),
-    concat([(I, C1)], Abr2, Res1),
-    is_clash(Lie,Lpt,Li,[(I, or(C1, C2))|Lu],Ls,Res1).
+transformation_or(Lie,Lpt,Li,[(I, or(C1, C2))|Lu],Ls,Abr) :-
+    concat([(I, C1)], Abr, Res1),
+    is_clash(Lie,Lpt,Li,Lu,Ls,Res1).
 
 /* 11.2. ⊔ fait */
-transformation_or(Lie,Lpt,Li,[(I, or(C1, C2))|Lu],Ls,Res2) :-
-    enleve((I, or(C1, C2)), _, Abr2),
-    concat([(I, C2)], Abr2, Res2),
-    is_clash(Lie,Lpt,Li,[(I, or(C1, C2))|Lu],Ls,Res2).
+transformation_or(Lie,Lpt,Li,[(I, or(C1, C2))|Lu],Ls,Abr) :-
+    concat([(I, C2)], Abr, Res2),
+    is_clash(Lie,Lpt,Li,Lu,Ls,Res2).
 
 /* evolue */
 
