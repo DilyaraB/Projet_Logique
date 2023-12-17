@@ -158,20 +158,77 @@ evolue([(I, not(C))|L], Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, [(I, not(C))
 
 /* affiche_evolution_Abox */
 
+affiche_assertion([]).
+
+affiche_assertion([(I1, I2, R)|L]) :-
+    write(I1), write(", "), write(I2),
+    write(" : "),
+    write(R),
+    nl,
+    affiche_assertion(L).
+
+affiche_assertion([(I, C)|L]) :-
+    write(I),
+    write(" : "),
+    write(C),
+    nl,
+    affiche_assertion(L).
+
+affiche_some([]).
+
+affiche_some([(I, some(R, C))|L]) :-
+    write(I),
+    write(" : "),
+    write("∃"), write(R), write("."), write(C),
+    nl,
+    affiche_some(L).
+
+affiche_all([]).
+
+affiche_all([(I, all(R, C))|L]) :-
+    write(I),
+    write(" : "),
+    write("∀"), write(R), write("."), write(C),
+    nl,
+    affiche_all(L).
+
+affiche_and([]).
+
+affiche_and([(I, and(C1, C2))|L]) :-
+    write(I),
+    write(" : "),
+    write(C1), write(" ⊓ "), write(C2),
+    nl,
+    affiche_and(L).
+
+affiche_or([]).
+
+affiche_or([(I, or(C1, C2))|L]) :-
+    write(I),
+    write(" : "),
+    write(C1), write(" ⊔ "), write(C2),
+    nl,
+    affiche_or(L).
+
 /*
-prop_car([], '').
-prop_car([], '') :-
-
-
-some_car(_).
-all_car(_).
-and_car(_).
-or_car(_).
+Qu'est-ce qu'on fait de Abr ?
+*/
 
 affiche_evolution_Abox(Ls1, Lie1, Lpt1, Li1, Lu1, Abr1, Ls2, Lie2, Lpt2, Li2, Lu2, Abr2) :-
-    nl,
-    write('Youpiiiiii, on a demontre la proposition initiale !!!'),!.
-*/
+    write("_____________________"), nl,
+    affiche_assertion(Ls1),
+    affiche_some(Lie1),
+    affiche_all(Lpt1),
+    affiche_and(Li1),
+    affiche_or(Lu1),
+    write("---------------------"), nl,
+    affiche_assertion(Ls2),
+    affiche_some(Lie2),
+    affiche_all(Lpt2),
+    affiche_and(Li2),
+    affiche_or(Lu2),
+    write("_____________________"), nl.
+
 
 /*
 Annexe
