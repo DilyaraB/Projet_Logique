@@ -42,6 +42,7 @@ tri_Abox([(I, C)|L], Lie, Lpt, Li, Lu, [(I, C)|Ls]) :-
     tri_Abox(L, Lie, Lpt, Li, Lu, Ls),!.
 
 tri_Abox([(I, not(C))|L], Lie, Lpt, Li, Lu, [(I, not(C))|Ls]) :-
+    cnamea(C),
     tri_Abox(L, Lie, Lpt, Li, Lu, Ls),!.
 
 /*  ----------------------
@@ -55,24 +56,21 @@ resolution(Lie,Lpt,Li,Lu,Ls,Abr) :-
 
 /* 1. clash ? oui ! */
 is_clash(Lie, Lpt, Li, Lu, Ls, Abr) :-
-    rname(R),
-    evolue(Abr, Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1),
-    member((I1, I2, R), Ls1),
-    member((I1, I2, not(R)), Ls1),
-    affiche_evolution_Abox(Ls, Lie, Lpt, Li, Lu, Abr, Ls1, Lie1, Lpt1, Li1, Lu1, Abr2).
+    member((I1, I2, R), Abr),
+    member((I1, I2, not(R)), Abr),
+    write("clash !"), nl,
+    affiche_evolution_Abox([], [], [], [], [], [], Ls, Lie, Lpt, Li, Lu, Abr).
 
 /* 2. clash ? oui ! */
 is_clash(Lie, Lpt, Li, Lu, Ls, Abr) :-
-    evolue(Abr, Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1),
-    member((I, C), Ls1),
-    member((I, not(C)), Ls1),
-    affiche_evolution_Abox(Ls, Lie, Lpt, Li, Lu, Abr, Ls1, Lie1, Lpt1, Li1, Lu1, Abr2).
+    member((I, C), Ls),
+    member((I, not(C)), Ls),
+    write("clash !"), nl,
+    affiche_evolution_Abox([], [], [], [], [], [], Ls, Lie, Lpt, Li, Lu, Abr).
 
 /* 3. clash ? non ! */
 is_clash(Lie,Lpt,Li,Lu,Ls,Abr) :-
-    evolue(Abr, Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1),
-    affiche_evolution_Abox(Ls, Lie, Lpt, Li, Lu, Abr, Ls1, Lie1, Lpt1, Li1, Lu1, Abr2),
-    resolution(Lie1,Lpt1,Li1,Lu1,Ls1,Abr2).
+    resolution(Lie,Lpt,Li,Lu,Ls,Abr).
 
 /* 4. ∃ non fait */
 complete_some([],Lpt,Li,Lu,Ls,[]) :-
@@ -82,8 +80,10 @@ complete_some([],Lpt,Li,Lu,Ls,[]) :-
 complete_some([(I, some(R, C))|Lie],Lpt,Li,Lu,Ls,Abr) :-
     write("Regle \u2203"), nl,
     iname(I2),
-    concat([(I, I2, R), (I2, C)], Abr, Res),
-    is_clash(Lie,Lpt,Li,Lu,Ls,Res).
+    concat([(I, I2, R)], Abr, Abr1),
+    evolue((I2, C), [(I, some(R, C))|Lie], Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1),
+    affiche_evolution_Abox(Ls, [(I, some(R, C))|Lie], Lpt, Li, Lu, Abr, Ls1, Lie1, Lpt1, Li1, Lu1, Abr1),
+    is_clash(Lie1,Lpt1,Li1,Lu1,Ls1,Abr1).
 
 /* 6. ⊓ non fait */
 transformation_and(Lie,Lpt,[],Lu,Ls,[]) :-
@@ -92,8 +92,10 @@ transformation_and(Lie,Lpt,[],Lu,Ls,[]) :-
 /* 7. ⊓ fait */
 transformation_and(Lie,Lpt,[(I, and(C1, C2))|Li],Lu,Ls,Abr) :-
     write("Regle \u2A05"), nl,
-    concat([(I, C1), (I, C2)], Abr, Res),
-    is_clash(Lie,Lpt,Li,Lu,Ls,Res).
+    evolue((I, C1), Lie, Lpt, [(I, and(C1, C2))|Li], Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1),
+    evolue((I, C2), Lie1, Lpt1, Li1, Lu1, Ls1, Lie2, Lpt2, Li2, Lu2, Ls2),
+    affiche_evolution_Abox(Ls, Lie, Lpt, [(I, and(C1, C2))|Li], Lu, Abr, Ls2, Lie2, Lpt2, Li2, Lu2, Abr),
+    is_clash(Lie2,Lpt2,Li2,Lu2,Ls2,Abr).
 
 /* 8. ∀ non fait */
 deduction_all(Lie,[],Li,Lu,Ls,[]) :-
@@ -102,47 +104,43 @@ deduction_all(Lie,[],Li,Lu,Ls,[]) :-
 /* 9. ∀ fait */
 deduction_all(Lie,[(I, all(R, C))|Lpt],Li,Lu,Ls,Abr) :-
     write("Regle \u2200"), nl,
-    concat([(I, C)], Abr, Res),
-    is_clash(Lie,Lpt,Li,Lu,Ls,Res).
+    evolue((I, C), Lie, [(I, all(R, C))|Lpt], Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1),
+    affiche_evolution_Abox(Ls, Lie, [(I, all(R, C))|Lpt], Li, Lu, Abr, Ls1, Lie1, Lpt1, Li1, Lu1, Abr),
+    is_clash(Lie1,Lpt1,Li1,Lu1,Ls1,Abr).
 
 /* 10. ⊔ non fait (rien car on doit retourner false) */
 
 /* 11.1. ⊔ fait */
 transformation_or(Lie,Lpt,Li,[(I, or(C1, C2))|Lu],Ls,Abr) :-
     write("Regle \u2A06 (branche 1)"), nl,
-    concat([(I, C1)], Abr, Res1),
-    is_clash(Lie,Lpt,Li,Lu,Ls,Res1).
+    evolue((I, C1), Lie, Lpt, Li, [(I, or(C1, C2))|Lu], Ls, Lie1, Lpt1, Li1, Lu1, Ls1),
+    affiche_evolution_Abox(Ls, Lie, Lpt, Li, [(I, or(C1, C2))|Lu], Abr, Ls1, Lie1, Lpt1, Li1, Lu1, Abr),
+    is_clash(Lie1,Lpt1,Li1,Lu1,Ls1,Abr).
 
 /* 11.2. ⊔ fait */
 transformation_or(Lie,Lpt,Li,[(I, or(C1, C2))|Lu],Ls,Abr) :-
     write("Regle \u2A06 (branche 2)"), nl,
-    concat([(I, C2)], Abr, Res2),
-    is_clash(Lie,Lpt,Li,Lu,Ls,Res2).
+    evolue((I, C2), Lie, Lpt, Li, [(I, or(C1, C2))|Lu], Ls, Lie1, Lpt1, Li1, Lu1, Ls1),
+    affiche_evolution_Abox(Ls, Lie, Lpt, Li, [(I, or(C1, C2))|Lu], Abr, Ls1, Lie1, Lpt1, Li1, Lu1, Abr),
+    is_clash(Lie1,Lpt1,Li1,Lu1,Ls1,Abr).
 
 /*  ----------------------
          Evolue
     ---------------------- */
 
-evolue([], Lie, Lpt, Li, Lu, Ls, Lie, Lpt, Li, Lu, Ls).
+evolue((I, some(R, C)), Lie, Lpt, Li, Lu, Ls, [(I, some(R, C))|Lie], Lpt, Li, Lu, Ls).
 
-evolue([(I, some(R, C))|L], Lie, Lpt, Li, Lu, Ls, [(I, some(R, C))|Lie1], Lpt1, Li1, Lu1, Ls1) :-
-    evolue(L, Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1),!.
+evolue((I, all(R, C)), Lie, Lpt, Li, Lu, Ls, Lie, [(I, all(R, C))|Lpt], Li, Lu, Ls).
 
-evolue([(I, all(R, C))|L], Lie, Lpt, Li, Lu, Ls, Lie1, [(I, all(R, C))|Lpt1], Li1, Lu1, Ls1) :-
-    evolue(L, Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1),!.
+evolue((I, and(C1, C2)), Lie, Lpt, Li, Lu, Ls, Lie, Lpt, [(I, and(C1, C2))|Li], Lu, Ls).
 
-evolue([(I, and(C1, C2))|L], Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, [(I, and(C1, C2))|Li1], Lu1, Ls1) :-
-    evolue(L, Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1),!.
+evolue((I, or(C1, C2)), Lie, Lpt, Li, Lu, Ls, Lie, Lpt, Li, [(I, or(C1, C2))|Lu], Ls).
 
-evolue([(I, or(C1, C2))|L], Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, [(I, or(C1, C2))|Lu1], Ls1) :-
-    evolue(L, Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1),!.
+evolue((I, C), Lie, Lpt, Li, Lu, Ls, Lie, Lpt, Li, Lu, [(I, C)|Ls]) :-
+    cnamea(C).
 
-evolue([(I, C)|L], Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, [(I, C)|Ls1]) :-
-    cnamea(C),
-    evolue(L, Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1),!.
-
-evolue([(I, not(C))|L], Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, [(I, not(C))|Ls1]) :-
-    evolue(L, Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1),!.
+evolue((I, not(C)), Lie, Lpt, Li, Lu, Ls, Lie, Lpt, Li, Lu, [(I, not(C))|Ls]) :-
+    cnamea(C).
 
 /*  ---------------------------
          Affiche évolution
@@ -197,4 +195,4 @@ affiche_evolution_Abox(Ls1, Lie1, Lpt1, Li1, Lu1, Abr1, Ls2, Lie2, Lpt2, Li2, Lu
     affiche_assertion(Lpt2),
     affiche_assertion(Li2),
     affiche_assertion(Lu2),
-    write("\\________________________________________/"), nl.
+    write("\\________________________________________/"), nl, nl.
