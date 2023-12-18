@@ -73,8 +73,8 @@ is_clash(Lie,Lpt,Li,Lu,Ls,Abr) :-
     resolution(Lie,Lpt,Li,Lu,Ls,Abr).
 
 /* 4. ∃ non fait */
-complete_some([],Lpt,Li,Lu,Ls,[]) :-
-    transformation_and([],Lpt,Li,Lu,Ls,[]).
+complete_some([],Lpt,Li,Lu,Ls,Abr) :-
+    transformation_and([],Lpt,Li,Lu,Ls,Abr).
 
 /* 5. ∃ fait */
 complete_some([(I, some(R, C))|Lie],Lpt,Li,Lu,Ls,Abr) :-
@@ -86,8 +86,8 @@ complete_some([(I, some(R, C))|Lie],Lpt,Li,Lu,Ls,Abr) :-
     is_clash(Lie1,Lpt1,Li1,Lu1,Ls1,Abr1).
 
 /* 6. ⊓ non fait */
-transformation_and(Lie,Lpt,[],Lu,Ls,[]) :-
-    deduction_all(Lie,Lpt,[],Lu,Ls,[]).
+transformation_and(Lie,Lpt,[],Lu,Ls,Abr) :-
+    deduction_all(Lie,Lpt,[],Lu,Ls,Abr).
 
 /* 7. ⊓ fait */
 transformation_and(Lie,Lpt,[(I, and(C1, C2))|Li],Lu,Ls,Abr) :-
@@ -98,8 +98,8 @@ transformation_and(Lie,Lpt,[(I, and(C1, C2))|Li],Lu,Ls,Abr) :-
     is_clash(Lie2,Lpt2,Li2,Lu2,Ls2,Abr).
 
 /* 8. ∀ non fait */
-deduction_all(Lie,[],Li,Lu,Ls,[]) :-
-    transformation_or(Lie,[],Li,Lu,Ls,[]).
+deduction_all(Lie,[],Li,Lu,Ls,Abr) :-
+    transformation_or(Lie,[],Li,Lu,Ls,Abr).
 
 /* 9. ∀ fait */
 deduction_all(Lie,[(I, all(R, C))|Lpt],Li,Lu,Ls,Abr) :-
@@ -177,9 +177,14 @@ affiche_concept(C) :-
 
 affiche_assertion([]).
 
-affiche_assertion([(I, C)|L]):-
+affiche_assertion([(I, C)|L]) :-
 	write("| "), write(I), write(' : '), affiche_concept(C), nl,
 	affiche_assertion(L).
+
+affiche_role([]).
+affiche_role([(I1, I2, R)|L]) :-
+    write("| "), write(I1), write(", "), write(I2), write(' : '), write(R), nl,
+	affiche_role(L).
 
 affiche_evolution_Abox(Ls1, Lie1, Lpt1, Li1, Lu1, Abr1, Ls2, Lie2, Lpt2, Li2, Lu2, Abr2) :-
     write(" ________________________________________"), nl,
@@ -189,10 +194,12 @@ affiche_evolution_Abox(Ls1, Lie1, Lpt1, Li1, Lu1, Abr1, Ls2, Lie2, Lpt2, Li2, Lu
     affiche_assertion(Lpt1),
     affiche_assertion(Li1),
     affiche_assertion(Lu1),
+    affiche_role(Abr1),
     write("|----------------------------------------"), nl,
     affiche_assertion(Ls2),
     affiche_assertion(Lie2),
     affiche_assertion(Lpt2),
     affiche_assertion(Li2),
     affiche_assertion(Lu2),
+    affiche_role(Abr2),
     write("\\________________________________________/"), nl, nl.
