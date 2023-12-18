@@ -12,13 +12,6 @@ Ls : Liste ?
 
 compteur(1).
 
-troisieme_etape(Abi,Abr) :-
-    tri_Abox(Abi,Lie,Lpt,Li,Lu,Ls),
-    affiche_evolution_Abox(Ls, Lie, Lpt, Li, Lu, Abr, [], [], [], [], [], []),
-    resolution(Lie,Lpt,Li,Lu,Ls,Abr),
-    nl,
-    write('Youpiiiiii, on a demontre la proposition initiale !!!'),!.
-
 /*  ----------------------
          tri_Abox 
     ---------------------- */
@@ -59,7 +52,7 @@ is_clash(Lie, Lpt, Li, Lu, Ls, Abr) :-
     member((I1, I2, R), Abr),
     member((I1, I2, not(R)), Abr),
     write("clash !"), nl,
-    affiche_role([(I1, I2, R), (I1, I2, not(R))])
+    affiche_role([(I1, I2, R), (I1, I2, not(R))]),
     affiche_evolution_Abox([], [], [], [], [], [], Ls, Lie, Lpt, Li, Lu, Abr).
 
 /* 2. clash ? oui ! */
