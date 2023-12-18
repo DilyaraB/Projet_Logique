@@ -20,12 +20,12 @@ premiere_etape(LTBox, LABox, LRoles) :-
 deuxieme_etape(Abi, Abi1, _) :- saisie_et_traitement_prop_a_demontrer(Abi,Abi1,_).
 
 /* Partie 3 de l'énoncé */
-troisieme_etape(Abi, Abr) :-
+troisieme_etape(Abi,Abr) :-
     tri_Abox(Abi,Lie,Lpt,Li,Lu,Ls),
     affiche_evolution_Abox(Ls, Lie, Lpt, Li, Lu, Abr, [], [], [], [], [], []),
     resolution(Lie,Lpt,Li,Lu,Ls,Abr),
     nl,
-    write('Youpiiiiii, on a demontre la proposition initiale !!!'),!.
+    write('Youpiiiiii, on a demontre la proposition initiale !!!'),!. 
 
 saisie_et_traitement_prop_a_demontrer(Abi,Abi1,_) :-
     nl,
