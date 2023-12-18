@@ -37,6 +37,7 @@ Ls : Liste ?
 compteur(1).
 troisieme_etape(Abi,Abr) :-
     tri_Abox(Abi,Lie,Lpt,Li,Lu,Ls),
+    affiche_evolution_Abox(Ls, Lie, Lpt, Li, Lu, Abr, Ls, Lie, Lpt, Li, Lu, Abr),
     resolution(Lie,Lpt,Li,Lu,Ls,Abr),
     nl,
     write('Youpiiiiii, on a demontre la proposition initiale !!!'),!.
@@ -76,20 +77,23 @@ resolution(Lie,Lpt,Li,Lu,Ls,Abr) :-
 is_clash(Lie, Lpt, Li, Lu, Ls, Abr) :-
     setof(X, rname(X), Lr),
     member(R, Lr),
-    evolue(Abr, Lie, Lpt, Li, Lu, Ls, _, _, _, _, Ls1),
+    evolue(Abr, Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1),
     member((I1, I2, R), Ls1),
-    member((I1, I2, not(R)), Ls1).
+    member((I1, I2, not(R)), Ls1),
+    affiche_evolution_Abox(Ls, Lie, Lpt, Li, Lu, Abr, Ls1, Lie1, Lpt1, Li1, Lu1, Abr).
 
 /* 2. clash ? oui ! */
 is_clash(Lie, Lpt, Li, Lu, Ls, Abr) :-
-    evolue(Abr, Lie, Lpt, Li, Lu, Ls, _, _, _, _, Ls1),
+    evolue(Abr, Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1),
     member((I, C), Ls1),
-    member((I, not(C)), Ls1).
+    member((I, not(C)), Ls1),
+    affiche_evolution_Abox(Ls, Lie, Lpt, Li, Lu, Abr, Ls1, Lie1, Lpt1, Li1, Lu1, Abr).
 
 /* 3. clash ? non ! */
 is_clash(Lie,Lpt,Li,Lu,Ls,Abr) :-
     evolue(Abr, Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1),
-    resolution(Lie1,Lpt1,Li1,Lu1,Ls1,[]).
+    affiche_evolution_Abox(Ls, Lie, Lpt, Li, Lu, Abr, Ls1, Lie1, Lpt1, Li1, Lu1, Abr2),
+    resolution(Lie1,Lpt1,Li1,Lu1,Ls1,Abr2).
 
 /* 4. ∃ non fait */
 complete_some([],Lpt,Li,Lu,Ls,[]) :-
@@ -158,57 +162,39 @@ evolue([(I, not(C))|L], Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, [(I, not(C))
 
 /* affiche_evolution_Abox */
 
+affiche_concept(some(R, C)) :-
+    write("\u2203"), 
+    write(R), write("."), 
+    affiche_concept(C).
+
+affiche_concept(all(R, C)) :-
+    write("\u2200"), 
+    write(R), write("."), 
+    affiche_concept(C).
+
+affiche_concept(and(C1, C2)) :-
+    affiche_concept(C1), 
+    write(" \u2A05 "), 
+    affiche_concept(C2).
+
+affiche_concept(or(C1, C2)) :-
+    affiche_concept(C1), 
+    write(" \u2A06 "), 
+    affiche_concept(C2).
+
+affiche_concept(not(C)) :-
+    write("\u00AC("),
+    affiche_concept(C),
+    write(")").
+
+affiche_concept(C) :-
+    write(C).
+
 affiche_assertion([]).
 
-affiche_assertion([(I1, I2, R)|L]) :-
-    write(I1), write(", "), write(I2),
-    write(" : "),
-    write(R),
-    nl,
-    affiche_assertion(L).
-
-affiche_assertion([(I, C)|L]) :-
-    write(I),
-    write(" : "),
-    write(C),
-    nl,
-    affiche_assertion(L).
-
-affiche_some([]).
-
-affiche_some([(I, some(R, C))|L]) :-
-    write(I),
-    write(" : "),
-    write("∃"), write(R), write("."), write(C),
-    nl,
-    affiche_some(L).
-
-affiche_all([]).
-
-affiche_all([(I, all(R, C))|L]) :-
-    write(I),
-    write(" : "),
-    write("∀"), write(R), write("."), write(C),
-    nl,
-    affiche_all(L).
-
-affiche_and([]).
-
-affiche_and([(I, and(C1, C2))|L]) :-
-    write(I),
-    write(" : "),
-    write(C1), write(" ⊓ "), write(C2),
-    nl,
-    affiche_and(L).
-
-affiche_or([]).
-
-affiche_or([(I, or(C1, C2))|L]) :-
-    write(I),
-    write(" : "),
-    write(C1), write(" ⊔ "), write(C2),
-    nl,
-    affiche_or(L).
+affiche_assertion([(I, C)|L]):-
+	write(I), write(' : '), affiche_concept(C), nl,
+	affiche_assertion(L).
 
 /*
 Qu'est-ce qu'on fait de Abr ?
@@ -217,16 +203,20 @@ Qu'est-ce qu'on fait de Abr ?
 affiche_evolution_Abox(Ls1, Lie1, Lpt1, Li1, Lu1, Abr1, Ls2, Lie2, Lpt2, Li2, Lu2, Abr2) :-
     write("_____________________"), nl,
     affiche_assertion(Ls1),
-    affiche_some(Lie1),
-    affiche_all(Lpt1),
-    affiche_and(Li1),
-    affiche_or(Lu1),
-    write("---------------------"), nl,
+    affiche_assertion(Lie1),
+    affiche_assertion(Lpt1),
+    affiche_assertion(Li1),
+    affiche_assertion(Lu1),
+    write(Abr1), nl,
+
+    write("-------------"), nl,
     affiche_assertion(Ls2),
-    affiche_some(Lie2),
-    affiche_all(Lpt2),
-    affiche_and(Li2),
-    affiche_or(Lu2),
+    affiche_assertion(Lie2),
+    affiche_assertion(Lpt2),
+    affiche_assertion(Li2),
+    affiche_assertion(Lu2),
+    write(Abr2), nl,
+    
     write("_____________________"), nl.
 
 
