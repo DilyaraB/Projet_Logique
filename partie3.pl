@@ -82,14 +82,12 @@ complete_some([],Lpt,Li,Lu,Ls,Abr) :-
 complete_some([(I, some(R, C))|Lie],Lpt,Li,Lu,Ls,Abr) :-
     write("Regle \u2203 "), nl,
     affiche_assertion([(I, some(R, C))]), write("| --> "), nl,
-
     genere(I2),
-    concat([(I, I2, R)], Abr, Abr1),
-    evolue((I2, C), Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1),
-
     affiche_role([(I, I2, R)]),
     affiche_assertion([(I2, C)]),
 
+    concat([(I, I2, R)], Abr, Abr1),
+    evolue((I2, C), Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1),
     affiche_evolution_Abox(Ls, [(I, some(R, C))|Lie], Lpt, Li, Lu, Abr, Ls1, Lie1, Lpt1, Li1, Lu1, Abr1),
     is_clash(Lie1,Lpt1,Li1,Lu1,Ls1,Abr1).
 
@@ -122,7 +120,7 @@ deduction_all(Lie,[(I, all(R, C))|Lpt],Li,Lu,Ls,Abr) :-
     affiche_evolution_Abox(Ls, Lie, [(I, all(R, C))|Lpt], Li, Lu, Abr, Ls1, Lie1, Lpt1, Li1, Lu1, Abr),
     is_clash(Lie1,Lpt1,Li1,Lu1,Ls1,Abr).
 
-/* 10. ⊔ non fait (rien car on doit retourner false) */
+/* 10. ⊔ non fait */
 
 /* 11.1. ⊔ fait */
 transformation_or(Lie,Lpt,Li,[(I, or(C1, C2))|Lu],Ls,Abr) :-
@@ -132,17 +130,15 @@ transformation_or(Lie,Lpt,Li,[(I, or(C1, C2))|Lu],Ls,Abr) :-
 
     evolue((I, C1), Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1),
     affiche_evolution_Abox(Ls, Lie, Lpt, Li, [(I, or(C1, C2))|Lu], Abr, Ls1, Lie1, Lpt1, Li1, Lu1, Abr),
-    is_clash(Lie1,Lpt1,Li1,Lu1,Ls1,Abr).
+    is_clash(Lie1,Lpt1,Li1,Lu1,Ls1,Abr),
 
-/* 11.2. ⊔ fait */
-transformation_or(Lie,Lpt,Li,[(I, or(C1, C2))|Lu],Ls,Abr) :-
     write("Regle \u2A06 (branche 2) "), nl,
     affiche_assertion([(I, or(C1, C2))]), write("| --> "), nl,
     affiche_assertion([(I, C2)]),
 
-    evolue((I, C2), Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1),
-    affiche_evolution_Abox(Ls, Lie, Lpt, Li, [(I, or(C1, C2))|Lu], Abr, Ls1, Lie1, Lpt1, Li1, Lu1, Abr),
-    is_clash(Lie1,Lpt1,Li1,Lu1,Ls1,Abr).
+    evolue((I, C2), Lie, Lpt, Li, Lu, Ls, Lie2, Lpt2, Li2, Lu2, Ls2),
+    affiche_evolution_Abox(Ls, Lie, Lpt, Li, [(I, or(C1, C2))|Lu], Abr, Ls2, Lie2, Lpt2, Li2, Lu2, Abr),
+    is_clash(Lie2,Lpt2,Li2,Lu2,Ls2,Abr).
 
 /*  ----------------------
          Evolue
