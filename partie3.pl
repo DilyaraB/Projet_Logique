@@ -12,6 +12,13 @@ Ls : Liste ?
 
 compteur(1).
 
+troisieme_etape(Abi,Abr) :-
+    tri_Abox(Abi,Lie,Lpt,Li,Lu,Ls),
+    affiche_evolution_Abox(Ls, Lie, Lpt, Li, Lu, Abr, [], [], [], [], [], []),
+    resolution(Lie,Lpt,Li,Lu,Ls,Abr),
+    nl,
+    write('Youpiiiiii, on a demontre la proposition initiale !!!'),!.
+
 /*  ----------------------
          tri_Abox 
     ---------------------- */
@@ -52,7 +59,7 @@ is_clash(Lie, Lpt, Li, Lu, Ls, Abr) :-
     member((I1, I2, R), Abr),
     member((I1, I2, not(R)), Abr),
     write("clash !"), nl,
-    affiche_role([(I1, I2, R), (I1, I2, not(R))]),
+    affiche_role([(I1, I2, R), (I1, I2, not(R))])
     affiche_evolution_Abox([], [], [], [], [], [], Ls, Lie, Lpt, Li, Lu, Abr).
 
 /* 2. clash ? oui ! */
@@ -105,15 +112,36 @@ deduction_all(Lie,[],Li,Lu,Ls,Abr) :-
 
 /* 9. ∀ fait */
 deduction_all(Lie,[(I, all(R, C))|Lpt],Li,Lu,Ls,Abr) :-
-    write("Regle \u2200 "), nl,
-    affiche_assertion([(I, all(R, C))]), write("| --> "), nl,
-    affiche_assertion([(I, C)]),
 
-    evolue((I, C), Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1),
+    (setof((I2, C),  member((I, I2, R), Abr), L) -> 
+		write("Regle \u2200 "), nl,
+        affiche_assertion([(I, all(R, C))]), write("| --> "), nl,
+        affiche_assertion([(I2, C)]), 
+		nl
+	),
+
+    verif_new_abox(L, Ls),
+    evolue_list(L, Lie, [(I, all(R, C))|Lpt], Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1),
     affiche_evolution_Abox(Ls, Lie, [(I, all(R, C))|Lpt], Li, Lu, Abr, Ls1, Lie1, Lpt1, Li1, Lu1, Abr),
     is_clash(Lie1,Lpt1,Li1,Lu1,Ls1,Abr).
 
+/* 8. ∀ non fait */
+deduction_all(Lie,[(I, all(R, C))|Lpt],Li,Lu,Ls,Abr) :-
+    transformation_or(Lie,[(I, all(R, C))|Lpt],Li,Lu,Ls,Abr).
+
+verif_new_abox([], _) :-
+    write("Il n'y a pas de nouvelles instances pour \u2200."), nl,
+    fail.
+verif_new_abox([X|L], Ls) :-
+    \+ member(X, Ls),!.
+verif_new_abox([X|L], Ls) :-
+    member(X, Ls),
+    verif_new_abox(L, Ls),!.
+
 /* 10. ⊔ non fait */
+transformation_or(Lie,Lpt,Li,[],Ls,Abr) :-
+    write("On ne peut rien conclure..."), nl,
+    fail.
 
 /* 11.1. ⊔ fait */
 transformation_or(Lie,Lpt,Li,[(I, or(C1, C2))|Lu],Ls,Abr) :-
@@ -164,6 +192,12 @@ evolue((I, not(C)), Lie, Lpt, Li, Lu, Ls, Lie, Lpt, Li, Lu, Ls) :-
     member((I, not(C)), Ls).
 evolue((I, not(C)), Lie, Lpt, Li, Lu, Ls, Lie, Lpt, Li, Lu, [(I, not(C))|Ls]) :-
     cnamea(C).
+
+/* evolue_list pour les insertions par liste */
+evolue_list([], Lie, Lpt, Li, Lu, Ls, Lie, Lpt, Li, Lu, Ls).
+evolue_list([X|L], Lie, Lpt, Li, Lu, Ls, Lie2, Lpt2, Li2, Lu2, Ls2) :-
+    evolue(X, Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1),
+    evolue_list(L, Lie1, Lpt1, Li1, Lu1, Ls1, Lie2, Lpt2, Li2, Lu2, Ls2),!.
 
 /*  ---------------------------
         AFFICHE EVOLUTION
