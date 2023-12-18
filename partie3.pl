@@ -1,7 +1,7 @@
 /*
     Notes :
     - Pour le quantificateur "Pour Tout", "On ne peut rien conclure..." s'affiche deux fois
-    - Pour le quantificateur "Il Existe", On a une boucle infinie à cause de genere(Nom)
+    - Pour le quantificateur "Il Existe", On a une boucle infinie à cause de genere(Nom) (problème du compteur ?)
 */
 
 /* Initialise le compteur pour la génération de nouvelles instances */
@@ -59,7 +59,7 @@ tri_Abox([(I, not(C))|L], Lie, Lpt, Li, Lu, [(I, not(C))|Ls]) :-
 resolution([],[],[],[],[],[]).
 
 resolution(Lie,Lpt,Li,Lu,Ls,Abr) :-
-    complete_some(Lie,Lpt,Li,Lu,Ls,Abr),!.
+    complete_some(Lie,Lpt,Li,Lu,Ls,Abr).
 
 /* 1. clash ? oui ! */
 is_clash(Lie, Lpt, Li, Lu, Ls, Abr) :-
@@ -67,7 +67,7 @@ is_clash(Lie, Lpt, Li, Lu, Ls, Abr) :-
     member((I1, I2, not(R)), Abr),
     write("clash !"), nl,
     affiche_role([(I1, I2, R), (I1, I2, not(R))])
-    affiche_evolution_Abox([], [], [], [], [], [], Ls, Lie, Lpt, Li, Lu, Abr),!.
+    affiche_evolution_Abox([], [], [], [], [], [], Ls, Lie, Lpt, Li, Lu, Abr).
 
 /* 2. clash ? oui ! */
 is_clash(Lie, Lpt, Li, Lu, Ls, Abr) :-
@@ -75,14 +75,14 @@ is_clash(Lie, Lpt, Li, Lu, Ls, Abr) :-
     member((I, not(C)), Ls),
     write("clash !"), nl,
     affiche_assertion([(I, C), (I, not(C))]),
-    affiche_evolution_Abox([], [], [], [], [], [], Ls, Lie, Lpt, Li, Lu, Abr),!.
+    affiche_evolution_Abox([], [], [], [], [], [], Ls, Lie, Lpt, Li, Lu, Abr).
 
 /* 3. clash ? non ! */
 is_clash(Lie,Lpt,Li,Lu,Ls,Abr) :-
-    resolution(Lie,Lpt,Li,Lu,Ls,Abr),!.
+    resolution(Lie,Lpt,Li,Lu,Ls,Abr).
 
 /*  _______________________________________                
-    COMPLETE_SOME 
+    COMPLETE_SOME : Règle ∃
     _______________________________________
 
     On génère une nouvelle instance 
@@ -104,10 +104,10 @@ complete_some([(I, some(R, C))|Lie],Lpt,Li,Lu,Ls,Abr) :-
     concat([(I, I2, R)], Abr, Abr1),
     evolue((I2, C), Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1),
     affiche_evolution_Abox(Ls, [(I, some(R, C))|Lie], Lpt, Li, Lu, Abr, Ls1, Lie1, Lpt1, Li1, Lu1, Abr1),
-    is_clash(Lie1,Lpt1,Li1,Lu1,Ls1,Abr1),!.
+    is_clash(Lie1,Lpt1,Li1,Lu1,Ls1,Abr1).
 
 /*  _______________________________________
-    TRANSFORMATION_AND
+    TRANSFORMATION_AND : Règle ⊓
     _______________________________________
 
     Transformation d'une assertion contenant le 'and' en deux assertions
@@ -127,10 +127,10 @@ transformation_and(Lie,Lpt,[(I, and(C1, C2))|Li],Lu,Ls,Abr) :-
     evolue((I, C1), Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1),
     evolue((I, C2), Lie1, Lpt1, Li1, Lu1, Ls1, Lie2, Lpt2, Li2, Lu2, Ls2),
     affiche_evolution_Abox(Ls, Lie, Lpt, [(I, and(C1, C2))|Li], Lu, Abr, Ls2, Lie2, Lpt2, Li2, Lu2, Abr),
-    is_clash(Lie2,Lpt2,Li2,Lu2,Ls2,Abr),!.
+    is_clash(Lie2,Lpt2,Li2,Lu2,Ls2,Abr).
 
 /*  _______________________________________
-    DEDUCTION_ALL
+    DEDUCTION_ALL : Règle ∀
     _______________________________________
 
     On a besoin de parcourir toutes les assertions de role de Abr
@@ -155,9 +155,9 @@ deduction_all(Lie,[(I, all(R, C))|Lpt],Li,Lu,Ls,Abr) :-
     verif_new_abox(L, Ls),
     evolue_list(L, Lie, [(I, all(R, C))|Lpt], Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1),
     affiche_evolution_Abox(Ls, Lie, [(I, all(R, C))|Lpt], Li, Lu, Abr, Ls1, Lie1, Lpt1, Li1, Lu1, Abr),
-    is_clash(Lie1,Lpt1,Li1,Lu1,Ls1,Abr),!.
+    is_clash(Lie1,Lpt1,Li1,Lu1,Ls1,Abr).
 
-/* 8. ∀ non fait */
+/* 8. ∀ non fait (Un autre cas lorsqu'il n'y a pas de nouvelles instances) */
 deduction_all(Lie,[(I, all(R, C))|Lpt],Li,Lu,Ls,Abr) :-
     transformation_or(Lie,[(I, all(R, C))|Lpt],Li,Lu,Ls,Abr),!.
 
@@ -173,19 +173,19 @@ verif_new_abox([X|L], Ls) :-
     verif_new_abox(L, Ls),!.
 
 /*  _______________________________________
-    TRANSFORMATION_OR
+    TRANSFORMATION_OR : Règle ⊔
     _______________________________________
 
-    On découpe en deux branches, donc on a deux noeuds partant d'une même base
-    Lorsqu'on ne peut plus démontrer une branche, on abandonne 
-    On doit avoir les deux branches fermées pour pouvoir démontrer la proposition initiale
+    On découpe en deux branches, donc on a deux noeuds partant d'une même base.
+    Lorsqu'on ne peut plus démontrer une branche, on abandonne.
+    On doit avoir les deux branches fermées pour pouvoir démontrer la proposition initiale.
     _______________________________________
 */
 
 /* 10. ⊔ non fait */
 transformation_or(Lie,Lpt,Li,[],Ls,Abr) :-
     write("On ne peut rien conclure..."), nl,
-    fail,!.
+    fail.
 
 /* 11.1. ⊔ fait */
 
@@ -204,7 +204,7 @@ transformation_or(Lie,Lpt,Li,[(I, or(C1, C2))|Lu],Ls,Abr) :-
 
     evolue((I, C2), Lie, Lpt, Li, Lu, Ls, Lie2, Lpt2, Li2, Lu2, Ls2),
     affiche_evolution_Abox(Ls, Lie, Lpt, Li, [(I, or(C1, C2))|Lu], Abr, Ls2, Lie2, Lpt2, Li2, Lu2, Abr),
-    is_clash(Lie2,Lpt2,Li2,Lu2,Ls2,Abr),!.
+    is_clash(Lie2,Lpt2,Li2,Lu2,Ls2,Abr).
 
 /*  -------------------------------------------------------
     Evolue : Permet d'ajouter des assertions dans un noeud
