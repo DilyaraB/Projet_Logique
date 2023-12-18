@@ -82,28 +82,16 @@ complete_some([],Lpt,Li,Lu,Ls,Abr) :-
 complete_some([(I, some(R, C))|Lie],Lpt,Li,Lu,Ls,Abr) :-
     write("Regle \u2203 "), nl,
     affiche_assertion([(I, some(R, C))]), write("| --> "), nl,
-    affiche_role([(I, I2, R)]),
-    affiche_assertion([(I2, C)]),
 
-    iname(I2),
-    +/ member((I, I2, R), Abr),
+    genere(I2),
     concat([(I, I2, R)], Abr, Abr1),
     evolue((I2, C), Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1),
-    affiche_evolution_Abox(Ls, [(I, some(R, C))|Lie], Lpt, Li, Lu, Abr, Ls1, Lie1, Lpt1, Li1, Lu1, Abr1),
-    is_clash(Lie1,Lpt1,Li1,Lu1,Ls1,Abr1).
 
-/* 5. ∃ fait */
-complete_some([(I, some(R, C))|Lie],Lpt,Li,Lu,Ls,Abr) :-
-    write("Regle \u2203 "), nl,
-    affiche_assertion([(I, some(R, C))]), write("| --> "), nl,
     affiche_role([(I, I2, R)]),
     affiche_assertion([(I2, C)]),
 
-    iname(I2),
-    member((I, I2, R), Abr),
-    evolue((I2, C), Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1),
-    affiche_evolution_Abox(Ls, [(I, some(R, C))|Lie], Lpt, Li, Lu, Abr, Ls1, Lie1, Lpt1, Li1, Lu1, Abr),
-    is_clash(Lie1,Lpt1,Li1,Lu1,Ls1,Abr).
+    affiche_evolution_Abox(Ls, [(I, some(R, C))|Lie], Lpt, Li, Lu, Abr, Ls1, Lie1, Lpt1, Li1, Lu1, Abr1),
+    is_clash(Lie1,Lpt1,Li1,Lu1,Ls1,Abr1).
 
 /* 6. ⊓ non fait */
 transformation_and(Lie,Lpt,[],Lu,Ls,Abr) :-
@@ -239,7 +227,7 @@ affiche_role([(I1, I2, R)|L]) :-
 /* Afficher l'évolution : On affiche un noeud dans lequel on applique une règle spécifique 
                           sur les assertions avant la séparation pour obtenir les assertions 
                           après la séparation.
-                          
+
    Note : Ce prédicat ne permet que d'afficher le changement sur les assertions, les règles 
    et les changements effectués sont affichées entre les deux noeuds lors de leurs applications,
    mais le code d'affichage est écrit sur les prédicats des règles correspondants */
