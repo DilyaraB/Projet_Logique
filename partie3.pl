@@ -46,7 +46,11 @@ resolution(Lie,Lpt,Li,Lu,Ls,Abr) :-
     complete_some(Lie,Lpt,Li,Lu,Ls,Abr).
 
 resolution([], [], [], [], Ls, Abr):-
-	\+ is_clash([], [], [], [], Ls, Abr),
+	is_clash([], [], [], [], Ls, Abr), !.
+
+resolution([], [], [], [], Ls, Abr):-
+	\+ is_clash([], [], [], [], Ls, Abr), !, 
+    write("On ne peut rien conclure..."), nl, nl,
     !, fail.
 
 /* 2. clash ? oui ! */
@@ -171,12 +175,9 @@ verif_new_abox([X|L], Ls) :-
     _______________________________________
 */
 
-/* 10. ⊔ non fait */
-transformation_or(_,_,_,[],_,_) :-
-    write("On ne peut rien conclure..."), nl, nl,
-    !, fail.
+/* 10. ⊔ non fait (pas besoin) */
 
-/* 11.1. ⊔ fait */
+/* 11. ⊔ fait */
 
 transformation_or(Lie,Lpt,Li,[(I, or(C1, C2))|Lu],Ls,Abr) :-
     write("Regle \u2A06 (branche 1) "), nl,
