@@ -155,7 +155,7 @@ deduction_all(Lie,[(I, all(R, C))|Lpt],Li,Lu,Ls,Abr) :-
 verif_new_abox([], _) :-
     write("Il n'y a pas de nouvelles instances pour \u2200."), nl,
     !, fail.
-verif_new_abox([X|L], Ls) :-
+verif_new_abox([X|_], Ls) :-
     \+ member(X, Ls),!.
 verif_new_abox([X|L], Ls) :-
     member(X, Ls),
@@ -172,7 +172,7 @@ verif_new_abox([X|L], Ls) :-
 */
 
 /* 10. ⊔ non fait */
-transformation_or(Lie,Lpt,Li,[],Ls,Abr) :-
+transformation_or(_,_,_,[],_,_) :-
     write("On ne peut rien conclure..."), nl, nl,
     !, fail.
 
