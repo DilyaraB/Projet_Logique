@@ -285,7 +285,7 @@ process_prop_type2(Concept1, Concept2, Abi, Abi1) :-
 */
 
 /*  -------------------------------------------------------
-    Permet de trier les assertions de concept
+    tri_Abox : Permet de trier les assertions de concept
     ------------------------------------------------------- */
 
 tri_Abox([], [], [], [], [], []).
@@ -327,7 +327,7 @@ resolution([],Lpt,[],[],Ls, Abr):-
     write("On ne peut rien conclure..."), nl, nl,
     !, fail.
 
-/* 2. clash ? oui ! */
+/* clash ? oui ! */
 is_clash(Lie, Lpt, Li, Lu, [(I, C) | Ls], Abr) :-
     nnf(not(C), NC),
     (member((I, NC), Ls) ->
@@ -346,11 +346,11 @@ is_clash(Lie, Lpt, Li, Lu, [(I, C) | Ls], Abr) :-
     _______________________________________
 */
 
-/* 4. ∃ non fait */
+/* ∃ non fait */
 complete_some([],Lpt,Li,Lu,Ls,Abr) :-
     transformation_and([],Lpt,Li,Lu,Ls,Abr),!.
 
-/* 5. ∃ fait */
+/* ∃ fait */
 complete_some([(I, some(R, C))|Lie],Lpt,Li,Lu,Ls,Abr) :-
     genere(I2),!,
     write("Regle \u2203 "), nl,
@@ -372,11 +372,11 @@ complete_some([(I, some(R, C))|Lie],Lpt,Li,Lu,Ls,Abr) :-
     _______________________________________
 */
 
-/* 6. ⊓ non fait */
+/* ⊓ non fait */
 transformation_and(Lie,Lpt,[],Lu,Ls,Abr) :-
     deduction_all(Lie,Lpt,[],Lu,Ls,Abr),!.
 
-/* 7. ⊓ fait */
+/* ⊓ fait */
 transformation_and(Lie,Lpt,[(I, and(C1, C2))|Li],Lu,Ls,Abr) :-
     write("Regle \u2A05 "), nl,
     affiche_assertion([(I, and(C1, C2))]), write("| --> "), nl,
@@ -402,11 +402,11 @@ transformation_and(Lie,Lpt,[(I, and(C1, C2))|Li],Lu,Ls,Abr) :-
     _______________________________________
 */
 
-/* 8. ∀ non fait */
+/* ∀ non fait */
 deduction_all(Lie,[],Li,Lu,Ls,Abr) :-
     transformation_or(Lie,[],Li,Lu,Ls,Abr),!.
 
-/* 9. ∀ fait */
+/* ∀ fait */
 deduction_all(Lie,[(I, all(R, C))|Lpt],Li,Lu,Ls,Abr) :-
 
     (setof((I2, C),  member((I, I2, R), Abr), L) -> 
@@ -417,14 +417,14 @@ deduction_all(Lie,[(I, all(R, C))|Lpt],Li,Lu,Ls,Abr) :-
 	),
 
     verif_new_abox(L, Ls),
-    evolue_list(L, Lie, [(I, all(R, C))|Lpt], Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1),
+    evolue_list(L, Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1),
     affiche_evolution_Abox(Ls, Lie, [(I, all(R, C))|Lpt], Li, Lu, Abr, Ls1, Lie1, Lpt1, Li1, Lu1, Abr),
     ( is_clash(Lie1,Lpt1,Li1,Lu1,Ls1,Abr) -> true
     ;
     resolution(Lie1,Lpt1,Li1,Lu1,Ls1,Abr)
     ).
 
-/* 8. ∀ non fait (Un autre cas lorsqu'il n'y a pas de nouvelles instances) */
+/* ∀ non fait (Un autre cas lorsqu'il n'y a pas de nouvelles instances) */
 deduction_all(Lie,[(I, all(R, C))|Lpt],Li,Lu,Ls,Abr) :-
     transformation_or(Lie,[(I, all(R, C))|Lpt],Li,Lu,Ls,Abr),!.
 
@@ -453,9 +453,9 @@ verif_new_abox([X|L], Ls) :-
     _______________________________________
 */
 
-/* 10. ⊔ non fait (pas besoin) */
+/* ⊔ non fait (pas besoin) */
 
-/* 11. ⊔ fait */
+/* ⊔ fait */
 
 transformation_or(Lie,Lpt,Li,[(I, or(C1, C2))|Lu],Ls,Abr) :-
     write("Regle \u2A06 (branche 1) "), nl,
