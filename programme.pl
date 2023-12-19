@@ -599,13 +599,28 @@ affiche_evolution_Abox(Ls1, Lie1, Lpt1, Li1, Lu1, Abr1, Ls2, Lie2, Lpt2, Li2, Lu
 
 /* Partie 1 de l'énoncé */
 premiere_etape(LTBox, LABox, LRoles) :- 
-    verify_tbox(LTBox), 
-    verify_abox(LABox), 
-    verify_abox(LRoles),
+    /* recuperation de la Tbox et de la Abox */
+    setof((C, D), equiv(C, D), Tbox),       
+    setof((I1, I2), inst(I1, I2), Abi),        
+    setof((I1, I2, R), instR(I1, I2, R), LRoles), 
+    (verify_tbox(TBox) ->
+        write('Vérification de la TBox a réussi'), nl;
+        write('Erreur de syntaxe dans la TBox'), nl, halt
+    ), 
+    (verify_abox(Abi), verify_abox(LRoles) ->
+        write('Vérification de la ABox a réussi'), nl;
+        write('Erreur de syntaxe dans la ABox'), nl, halt
+    ),
+    /* recuperation des concepts complexes */
     setof(X, cnamena(X), Lcno),
-    pas_autoref(Lcno),
-    traitement_box(LTBox),
-    traitement_box(LABox).
+    (pas_autoref(Lcno) ->
+        write('Vérification d\'auto-référencement a réussi'), nl;
+        write('Precence de concept auto-referent dans la Tbox'), nl, halt
+    ),
+    (traitement_box(LTBox, LTBox),traitement_box(LABox, LABox) ->
+        write('Transformation des box a réussi'), nl;
+        write('Erreur dans transformation'), nl, halt
+    ).
 
 /* Partie 2 de l'énoncé */
 /* Abi = liste des assertions de concepts initiales,
