@@ -38,7 +38,7 @@ genere(Nom) :- compteur(V),nombre(V,L1),
     dynamic(compteur/1),
     retract(compteur(V)),
     dynamic(compteur/1),
-    assert(compteur(V1)),nl,nl,nl,
+    assert(compteur(V1)),
     name(Nom,L2).
 
 nombre(0,[]).
@@ -318,7 +318,7 @@ tri_Abox([(I, not(C))|L], Lie, Lpt, Li, Lu, [(I, not(C))|Ls]) :-
 resolution([],[],[],[],[],[]).
 
 resolution(Lie,Lpt,Li,Lu,Ls,Abr) :-
-    complete_some(Lie,Lpt,Li,Lu,Ls,Abr).
+    complete_some(Lie,Lpt,Li,Lu,Ls,Abr), !.
 
 resolution([],Lpt,[],[],Ls, Abr):-
 	is_clash([],Lpt,[],[],Ls, Abr), !.
@@ -363,7 +363,7 @@ complete_some([(I, some(R, C))|Lie],Lpt,Li,Lu,Ls,Abr) :-
     evolue((I2, C), Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1),
     affiche_evolution_Abox(Ls, [(I, some(R, C))|Lie], Lpt, Li, Lu, Abr, Ls1, Lie1, Lpt1, Li1, Lu1, Abr1),
     (is_clash(Lie1, Lpt1, Li1, Lu1, Ls1, Abr1) -> true ; 
-    resolution(Lie1, Lpt1, Li1, Lu1, Ls1, Abr1)).
+    resolution(Lie1, Lpt1, Li1, Lu1, Ls1, Abr1)), !.
 
 /*  _______________________________________
     TRANSFORMATION_AND : Règle ⊓
@@ -413,8 +413,7 @@ deduction_all(Lie,[(I, all(R, C))|Lpt],Li,Lu,Ls,Abr) :-
     (setof((I2, C),  member((I, I2, R), Abr), L) -> 
 		write("Regle \u2200 "), nl,
         affiche_assertion([(I, all(R, C))]), write("| --> "), nl,
-        affiche_assertion([(I2, C)]), 
-		nl
+        affiche_assertion(L)
 	),
 
     evolue_list(L, Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1),
@@ -469,19 +468,19 @@ transformation_or(Lie,Lpt,Li,[(I, or(C1, C2))|Lu],Ls,Abr) :-
 
 evolue((I, some(R, C)), Lie, Lpt, Li, Lu, Ls, Lie, Lpt, Li, Lu, Ls) :-
     member((I, some(R, C)), Lie),!.
-evolue((I, some(R, C)), Lie, Lpt, Li, Lu, Ls, [(I, some(R, C))|Lie], Lpt, Li, Lu, Ls).
+evolue((I, some(R, C)), Lie, Lpt, Li, Lu, Ls, [(I, some(R, C))|Lie], Lpt, Li, Lu, Ls) :- !.
 
 evolue((I, all(R, C)), Lie, Lpt, Li, Lu, Ls, Lie, Lpt, Li, Lu, Ls) :-
     member((I, all(R, C)), Lpt),!.
-evolue((I, all(R, C)), Lie, Lpt, Li, Lu, Ls, Lie, [(I, all(R, C))|Lpt], Li, Lu, Ls).
+evolue((I, all(R, C)), Lie, Lpt, Li, Lu, Ls, Lie, [(I, all(R, C))|Lpt], Li, Lu, Ls) :- !.
 
 evolue((I, and(C1, C2)), Lie, Lpt, Li, Lu, Ls, Lie, Lpt, Li, Lu, Ls) :-
     member((I, and(C1, C2)), Li),!.
-evolue((I, and(C1, C2)), Lie, Lpt, Li, Lu, Ls, Lie, Lpt, [(I, and(C1, C2))|Li], Lu, Ls).
+evolue((I, and(C1, C2)), Lie, Lpt, Li, Lu, Ls, Lie, Lpt, [(I, and(C1, C2))|Li], Lu, Ls) :- !.
 
 evolue((I, or(C1, C2)), Lie, Lpt, Li, Lu, Ls, Lie, Lpt, Li, Lu, Ls) :-
     member((I, or(C1, C2)), Lu),!.
-evolue((I, or(C1, C2)), Lie, Lpt, Li, Lu, Ls, Lie, Lpt, Li, [(I, or(C1, C2))|Lu], Ls).
+evolue((I, or(C1, C2)), Lie, Lpt, Li, Lu, Ls, Lie, Lpt, Li, [(I, or(C1, C2))|Lu], Ls) :- !.
 
 evolue((I, C), Lie, Lpt, Li, Lu, Ls, Lie, Lpt, Li, Lu, Ls) :-
     cnamea(C),
@@ -576,7 +575,7 @@ affiche_evolution_Abox(Ls1, Lie1, Lpt1, Li1, Lu1, Abr1, Ls2, Lie2, Lpt2, Li2, Lu
     affiche_assertion(Li2),
     affiche_assertion(Lu2),
     affiche_role(Abr2),
-    write("\\________________________________________/"), nl, nl.
+    write("\\________________________________________/"), nl, nl,!.
 
 
 /*  ========================================================================
