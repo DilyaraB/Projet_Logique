@@ -119,7 +119,7 @@ instR(vinci, joconde, aCree).
     expressions
     ------------------------------------------------------- */
 
-instance(I) :- iname(I). /* Vérification des identificateurs dinstance 
+instance(I) :- iname(I). % Vérification des identificateurs dinstance 
 role(R) :- rname(R). % Vérification des identificateurs de rôle.
 
 concept(C) :- cnamea(C). % Vérification des concepts atomique
@@ -626,5 +626,5 @@ programme :-
     deuxieme_etape(Abi,Abi1,Tbox),
     troisieme_etape(Abi1,Abr), nl,
     write('Fin !').
-    
+
 programme.
