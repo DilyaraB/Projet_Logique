@@ -65,7 +65,7 @@ is_clash(Lie, Lpt, Li, Lu, [(I, C) | Ls], Abr) :-
     (member((I, NC), Ls) ->
         write("clash !"), nl,
         affiche_assertion([(I, C), (I, NC)]),
-        affiche_evolution_Abox([], [], [], [], [], [], Ls, Lie, Lpt, Li, Lu, Abr)
+        affiche_evolution_Abox([], [], [], [], [], [], [(I, C) | Ls], Lie, Lpt, Li, Lu, Abr)
     ;
         is_clash(Lie, Lpt, Li, Lu, Ls, Abr)
     ), !.
