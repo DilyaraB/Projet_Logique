@@ -467,32 +467,32 @@ transformation_or(Lie,Lpt,Li,[(I, or(C1, C2))|Lu],Ls,Abr) :-
     ------------------------------------------------------- */
 
 evolue((I, some(R, C)), Lie, Lpt, Li, Lu, Ls, Lie, Lpt, Li, Lu, Ls) :-
-    member((I, some(R, C)), Lie).
+    member((I, some(R, C)), Lie),!.
 evolue((I, some(R, C)), Lie, Lpt, Li, Lu, Ls, [(I, some(R, C))|Lie], Lpt, Li, Lu, Ls).
 
 evolue((I, all(R, C)), Lie, Lpt, Li, Lu, Ls, Lie, Lpt, Li, Lu, Ls) :-
-    member((I, all(R, C)), Lpt).
+    member((I, all(R, C)), Lpt),!.
 evolue((I, all(R, C)), Lie, Lpt, Li, Lu, Ls, Lie, [(I, all(R, C))|Lpt], Li, Lu, Ls).
 
 evolue((I, and(C1, C2)), Lie, Lpt, Li, Lu, Ls, Lie, Lpt, Li, Lu, Ls) :-
-    member((I, and(C1, C2)), Li).
+    member((I, and(C1, C2)), Li),!.
 evolue((I, and(C1, C2)), Lie, Lpt, Li, Lu, Ls, Lie, Lpt, [(I, and(C1, C2))|Li], Lu, Ls).
 
 evolue((I, or(C1, C2)), Lie, Lpt, Li, Lu, Ls, Lie, Lpt, Li, Lu, Ls) :-
-    member((I, or(C1, C2)), Lu).
+    member((I, or(C1, C2)), Lu),!.
 evolue((I, or(C1, C2)), Lie, Lpt, Li, Lu, Ls, Lie, Lpt, Li, [(I, or(C1, C2))|Lu], Ls).
 
 evolue((I, C), Lie, Lpt, Li, Lu, Ls, Lie, Lpt, Li, Lu, Ls) :-
     cnamea(C),
-    member((I, C), Ls).
+    member((I, C), Ls),!.
 evolue((I, C), Lie, Lpt, Li, Lu, Ls, Lie, Lpt, Li, Lu, [(I, C)|Ls]) :-
-    cnamea(C).
+    cnamea(C),!.
 
 evolue((I, not(C)), Lie, Lpt, Li, Lu, Ls, Lie, Lpt, Li, Lu, Ls) :-
     cnamea(C),
-    member((I, not(C)), Ls).
+    member((I, not(C)), Ls),!.
 evolue((I, not(C)), Lie, Lpt, Li, Lu, Ls, Lie, Lpt, Li, Lu, [(I, not(C))|Ls]) :-
-    cnamea(C).
+    cnamea(C),!.
 
 /* evolue_list pour les insertions par liste */
 evolue_list([], Lie, Lpt, Li, Lu, Ls, Lie, Lpt, Li, Lu, Ls).
