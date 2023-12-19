@@ -117,7 +117,10 @@ transformation_and(Lie,Lpt,[(I, and(C1, C2))|Li],Lu,Ls,Abr) :-
     _______________________________________
 
     On a besoin de parcourir toutes les assertions de role de Abr
-    pour insérer les assertions de concepts reliés
+    pour insérer les assertions de concepts reliés.
+    Note : Lorsqu'on ne trouve pas de nouvelles instances et qu'on n'a pas de feuille fermée,
+            le programme affiche deux fois "On ne peut rien conclure...", mais la recherche 
+            de nouvelles instances n'en n'est pas la cause.
     _______________________________________
 */
 
@@ -151,7 +154,7 @@ deduction_all(Lie,[(I, all(R, C))|Lpt],Li,Lu,Ls,Abr) :-
     On essaiera la règle du OR si il n'existe de nouvelles assertions */
 verif_new_abox([], _) :-
     write("Il n'y a pas de nouvelles instances pour \u2200."), nl,
-    fail.
+    !, fail.
 verif_new_abox([X|L], Ls) :-
     \+ member(X, Ls),!.
 verif_new_abox([X|L], Ls) :-
