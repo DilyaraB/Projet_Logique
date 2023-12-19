@@ -535,14 +535,18 @@ affiche_concept(all(R, C)) :-
     affiche_concept(C).
 
 affiche_concept(and(C1, C2)) :-
+    write("("),
     affiche_concept(C1), 
     write(" \u2A05 "), 
-    affiche_concept(C2).
+    affiche_concept(C2),
+    write(")").
 
 affiche_concept(or(C1, C2)) :-
+    write("("),
     affiche_concept(C1), 
     write(" \u2A06 "), 
-    affiche_concept(C2).
+    affiche_concept(C2),
+    write(")").
 
 affiche_concept(not(C)) :-
     write("\u00AC("),
