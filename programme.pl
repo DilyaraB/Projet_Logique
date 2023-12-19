@@ -223,7 +223,8 @@ suite(1,Abi,Abi1,Tbox) :-
 suite(2,Abi,Abi1,Tbox) :-
     acquisition_prop_type2(Abi,Abi1,Tbox),!.
 suite(R,Abi,Abi1,Tbox) :-
-    nl,write('Cette reponse est incorrecte.'),nl,
+    nl,write('Cette reponse est incorrecte : '),
+    write(R), nl,
     saisie_et_traitement_prop_a_demontrer(Abi,Abi1,Tbox).
 
 /*  -------------------------------------------------------
@@ -331,7 +332,7 @@ resolution([],Lpt,[],[],Ls, Abr):-
 is_clash(Lie, Lpt, Li, Lu, [(I, C) | Ls], Abr) :-
     nnf(not(C), NC),
     (member((I, NC), Ls) ->
-        write("clash !"), nl,
+        write('\e[31m   CLASH !\e[0m'), nl,
         affiche_assertion([(I, C), (I, NC)]),
         affiche_evolution_Abox([], [], [], [], [], [], [(I, C) | Ls], Lie, Lpt, Li, Lu, Abr)
     ;
@@ -585,26 +586,26 @@ affiche_evolution_Abox(Ls1, Lie1, Lpt1, Li1, Lu1, Abr1, Ls2, Lie2, Lpt2, Li2, Lu
 /* Partie 1 de l'énoncé */
 premiere_etape(LTBox, LABox, LRoles) :- 
     /* recuperation de la Tbox et de la Abox */
-    setof((C, D), equiv(C, D), Tbox),       
+    setof((C, D), equiv(C, D), TBox),       
     setof((I1, I2), inst(I1, I2), Abi),        
     setof((I1, I2, R), instR(I1, I2, R), LRoles), 
     (verify_tbox(TBox) ->
         write('Vérification de la TBox a réussi'), nl;
-        write('Erreur de syntaxe dans la TBox'), nl, halt
+        write('Erreur de syntaxe dans la TBox'), nl, fail
     ), 
     (verify_abox(Abi), verify_abox(LRoles) ->
         write('Vérification de la ABox a réussi'), nl;
-        write('Erreur de syntaxe dans la ABox'), nl, halt
+        write('Erreur de syntaxe dans la ABox'), nl, fail
     ),
     /* recuperation des concepts complexes */
     setof(X, cnamena(X), Lcno),
-    (pas_autoref(Lcno) ->
+    (maplist(pas_autoref, Lcno) ->
         write('Vérification d\'auto-référencement a réussi'), nl;
-        write('Precence de concept auto-referent dans la Tbox'), nl, halt
+        write('Precence de concept auto-referent dans la Tbox'), nl, fail
     ),
-    (traitement_box(LTBox, LTBox),traitement_box(LABox, LABox) ->
+    (traitement_box(TBox, LTBox),traitement_box(Abi, LABox) ->
         write('Transformation des box a réussi'), nl;
-        write('Erreur dans transformation'), nl, halt
+        write('Erreur dans transformation'), nl, fail
     ).
 
 /* Partie 2 de l'énoncé */
@@ -626,5 +627,3 @@ programme :-
     deuxieme_etape(Abi,Abi1,Tbox),
     troisieme_etape(Abi1,Abr), nl,
     write('Fin !').
-
-programme.
