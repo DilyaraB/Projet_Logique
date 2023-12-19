@@ -178,15 +178,15 @@ verif_new_abox([X|L], Ls) :-
     _______________________________________
 
     On découpe en deux branches, donc on a deux noeuds partant d'une même base.
-    Lorsqu'on ne peut plus démontrer une branche, on abandonne.
+    Lorsqu'on ne peut plus démontrer une branche, on abandonne (d'où abort)
     On doit avoir les deux branches fermées pour pouvoir démontrer la proposition initiale.
     _______________________________________
 */
 
 /* 10. ⊔ non fait */
 transformation_or(Lie,Lpt,Li,[],Ls,Abr) :-
-    write("On ne peut rien conclure..."), nl,
-    fail.
+    write("On ne peut rien conclure..."), nl, nl,
+    !, abort.
 
 /* 11.1. ⊔ fait */
 
