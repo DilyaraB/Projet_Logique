@@ -1,18 +1,14 @@
 /*
-
-Noms 
-
-Lie : Liste Il Existe
-Lpt : Liste Pour Tout
-Li : Liste Intersection
-Lu : Liste Union
-Ls : Liste des assertions du type (I, C) ou (I, not(C)) avec C atomique. 
-
+    - Lie : Liste Il Existe
+    - Lpt : Liste Pour Tout
+    - Li : Liste Intersection
+    - Lu : Liste Union
+    - Ls : Liste des assertions du type (I, C) ou (I, not(C)) avec C atomique. 
 */
 
-/*  ----------------------
-         tri_Abox 
-    ---------------------- */
+/*  -------------------------------------------------------
+    tri_Abox : Permet de trier les assertions de concept
+    ------------------------------------------------------- */
 
 tri_Abox([], [], [], [], [], []).
 
@@ -49,15 +45,9 @@ resolution([],[],[],[],[],[]).
 resolution(Lie,Lpt,Li,Lu,Ls,Abr) :-
     complete_some(Lie,Lpt,Li,Lu,Ls,Abr).
 
-resolution([], [], [], [], Ls, _):-
-	\+ is_clash([], [], [], [], Ls, _).
-
-/* 1. clash ? oui ! 
-is_clash(Lie, Lpt, Li, Lu, Ls, [(I1, I2, R) | Abr]) :-
-    member((I1, I2, not(R)), Abr),
-    write("clash !"), nl,
-    affiche_role([(I1, I2, R), (I1, I2, not(R))]),
-    affiche_evolution_Abox([], [], [], [], [], [], Ls, Lie, Lpt, Li, Lu, Abr). */
+resolution([], [], [], [], Ls, Abr):-
+	\+ is_clash([], [], [], [], Ls, Abr),
+    !, fail.
 
 /* 2. clash ? oui ! */
 is_clash(Lie, Lpt, Li, Lu, [(I, C) | Ls], Abr) :-
@@ -69,11 +59,6 @@ is_clash(Lie, Lpt, Li, Lu, [(I, C) | Ls], Abr) :-
     ;
         is_clash(Lie, Lpt, Li, Lu, Ls, Abr)
     ), !.
-
-
-/* 3. clash ? non ! 
-is_clash(Lie,Lpt,Li,Lu,Ls,Abr) :-
-    resolution(Lie,Lpt,Li,Lu,Ls,Abr). */
 
 /*  _______________________________________                
     COMPLETE_SOME : Règle ∃
@@ -89,7 +74,7 @@ complete_some([],Lpt,Li,Lu,Ls,Abr) :-
 
 /* 5. ∃ fait */
 complete_some([(I, some(R, C))|Lie],Lpt,Li,Lu,Ls,Abr) :-
-    genere(I2),
+    genere(I2),!,
     write("Regle \u2203 "), nl,
     affiche_assertion([(I, some(R, C))]), write("| --> "), nl,
     affiche_role([(I, I2, R)]),
@@ -178,7 +163,7 @@ verif_new_abox([X|L], Ls) :-
     _______________________________________
 
     On découpe en deux branches, donc on a deux noeuds partant d'une même base.
-    Lorsqu'on ne peut plus démontrer une branche, on abandonne (d'où abort)
+    Lorsqu'on ne peut plus démontrer une branche, on abandonne
     On doit avoir les deux branches fermées pour pouvoir démontrer la proposition initiale.
     _______________________________________
 */
@@ -186,7 +171,7 @@ verif_new_abox([X|L], Ls) :-
 /* 10. ⊔ non fait */
 transformation_or(Lie,Lpt,Li,[],Ls,Abr) :-
     write("On ne peut rien conclure..."), nl, nl,
-    !, abort.
+    !, fail.
 
 /* 11.1. ⊔ fait */
 
