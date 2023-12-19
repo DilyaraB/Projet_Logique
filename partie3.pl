@@ -1,30 +1,18 @@
 /*
-    Notes :
-    - Pour le quantificateur "Pour Tout", "On ne peut rien conclure..." s'affiche deux fois
-    - Pour le quantificateur "Il Existe", On a une boucle infinie à cause de genere(Nom) (problème du compteur ?)
+
+Noms 
+
+Lie : Liste Il Existe
+Lpt : Liste Pour Tout
+Li : Liste Intersection
+Lu : Liste Union
+Ls : Liste des assertions du type (I, C) ou (I, not(C)) avec C atomique. 
+
 */
 
-/* Initialise le compteur pour la génération de nouvelles instances */
-compteur(1).
-
-/* Toutes les étapes de la partie 3 */
-troisieme_etape(Abi,Abr) :-
-    tri_Abox(Abi,Lie,Lpt,Li,Lu,Ls),
-    affiche_evolution_Abox(Ls, Lie, Lpt, Li, Lu, Abr, [], [], [], [], [], []),
-    resolution(Lie,Lpt,Li,Lu,Ls,Abr),
-    nl,
-    write('Youpiiiiii, on a demontre la proposition initiale !!!'),!.
-
-/*  -------------------------------------------------------
-    tri_Abox : Permet de trier les assertions de concept
-    ------------------------------------------------------- */
-/*
-    - Lie : Liste Il Existe
-    - Lpt : Liste Pour Tout
-    - Li : Liste Intersection
-    - Lu : Liste Union
-    - Ls : Liste Concepts
-*/
+/*  ----------------------
+         tri_Abox 
+    ---------------------- */
 
 tri_Abox([], [], [], [], [], []).
 
@@ -61,25 +49,31 @@ resolution([],[],[],[],[],[]).
 resolution(Lie,Lpt,Li,Lu,Ls,Abr) :-
     complete_some(Lie,Lpt,Li,Lu,Ls,Abr).
 
-/* 1. clash ? oui ! */
-is_clash(Lie, Lpt, Li, Lu, Ls, Abr) :-
-    member((I1, I2, R), Abr),
+resolution([], [], [], [], Ls, _):-
+	\+ is_clash([], [], [], [], Ls, _).
+
+/* 1. clash ? oui ! 
+is_clash(Lie, Lpt, Li, Lu, Ls, [(I1, I2, R) | Abr]) :-
     member((I1, I2, not(R)), Abr),
     write("clash !"), nl,
-    affiche_role([(I1, I2, R), (I1, I2, not(R))])
-    affiche_evolution_Abox([], [], [], [], [], [], Ls, Lie, Lpt, Li, Lu, Abr).
+    affiche_role([(I1, I2, R), (I1, I2, not(R))]),
+    affiche_evolution_Abox([], [], [], [], [], [], Ls, Lie, Lpt, Li, Lu, Abr). */
 
 /* 2. clash ? oui ! */
-is_clash(Lie, Lpt, Li, Lu, Ls, Abr) :-
-    member((I, C), Ls),
-    member((I, not(C)), Ls),
-    write("clash !"), nl,
-    affiche_assertion([(I, C), (I, not(C))]),
-    affiche_evolution_Abox([], [], [], [], [], [], Ls, Lie, Lpt, Li, Lu, Abr).
+is_clash(Lie, Lpt, Li, Lu, [(I, C) | Ls], Abr) :-
+    nnf(not(C), NC),
+    (member((I, NC), Ls) ->
+        write("clash !"), nl,
+        affiche_assertion([(I, C), (I, NC)]),
+        affiche_evolution_Abox([], [], [], [], [], [], Ls, Lie, Lpt, Li, Lu, Abr)
+    ;
+        is_clash(Lie, Lpt, Li, Lu, Ls, Abr)
+    ), !.
 
-/* 3. clash ? non ! */
+
+/* 3. clash ? non ! 
 is_clash(Lie,Lpt,Li,Lu,Ls,Abr) :-
-    resolution(Lie,Lpt,Li,Lu,Ls,Abr).
+    resolution(Lie,Lpt,Li,Lu,Ls,Abr). */
 
 /*  _______________________________________                
     COMPLETE_SOME : Règle ∃
@@ -95,16 +89,17 @@ complete_some([],Lpt,Li,Lu,Ls,Abr) :-
 
 /* 5. ∃ fait */
 complete_some([(I, some(R, C))|Lie],Lpt,Li,Lu,Ls,Abr) :-
+    genere(I2),
     write("Regle \u2203 "), nl,
     affiche_assertion([(I, some(R, C))]), write("| --> "), nl,
-    genere(I2),
     affiche_role([(I, I2, R)]),
     affiche_assertion([(I2, C)]),
 
     concat([(I, I2, R)], Abr, Abr1),
     evolue((I2, C), Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1),
     affiche_evolution_Abox(Ls, [(I, some(R, C))|Lie], Lpt, Li, Lu, Abr, Ls1, Lie1, Lpt1, Li1, Lu1, Abr1),
-    is_clash(Lie1,Lpt1,Li1,Lu1,Ls1,Abr1).
+    (is_clash(Lie1, Lpt1, Li1, Lu1, Ls1, Abr1) -> true ; 
+    resolution(Lie1, Lpt1, Li1, Lu1, Ls1, Abr1)).
 
 /*  _______________________________________
     TRANSFORMATION_AND : Règle ⊓
@@ -127,7 +122,10 @@ transformation_and(Lie,Lpt,[(I, and(C1, C2))|Li],Lu,Ls,Abr) :-
     evolue((I, C1), Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1),
     evolue((I, C2), Lie1, Lpt1, Li1, Lu1, Ls1, Lie2, Lpt2, Li2, Lu2, Ls2),
     affiche_evolution_Abox(Ls, Lie, Lpt, [(I, and(C1, C2))|Li], Lu, Abr, Ls2, Lie2, Lpt2, Li2, Lu2, Abr),
-    is_clash(Lie2,Lpt2,Li2,Lu2,Ls2,Abr).
+    ( is_clash(Lie2,Lpt2,Li2,Lu2,Ls2,Abr) -> true
+    ;
+    resolution(Lie2,Lpt2,Li2,Lu2,Ls2,Abr)
+    ).
 
 /*  _______________________________________
     DEDUCTION_ALL : Règle ∀
@@ -155,7 +153,10 @@ deduction_all(Lie,[(I, all(R, C))|Lpt],Li,Lu,Ls,Abr) :-
     verif_new_abox(L, Ls),
     evolue_list(L, Lie, [(I, all(R, C))|Lpt], Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1),
     affiche_evolution_Abox(Ls, Lie, [(I, all(R, C))|Lpt], Li, Lu, Abr, Ls1, Lie1, Lpt1, Li1, Lu1, Abr),
-    is_clash(Lie1,Lpt1,Li1,Lu1,Ls1,Abr).
+    ( is_clash(Lie1,Lpt1,Li1,Lu1,Ls1,Abr) -> true
+    ;
+    resolution(Lie1,Lpt1,Li1,Lu1,Ls1,Abr)
+    ).
 
 /* 8. ∀ non fait (Un autre cas lorsqu'il n'y a pas de nouvelles instances) */
 deduction_all(Lie,[(I, all(R, C))|Lpt],Li,Lu,Ls,Abr) :-
@@ -196,7 +197,10 @@ transformation_or(Lie,Lpt,Li,[(I, or(C1, C2))|Lu],Ls,Abr) :-
 
     evolue((I, C1), Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1),
     affiche_evolution_Abox(Ls, Lie, Lpt, Li, [(I, or(C1, C2))|Lu], Abr, Ls1, Lie1, Lpt1, Li1, Lu1, Abr),
-    is_clash(Lie1,Lpt1,Li1,Lu1,Ls1,Abr),
+    ( is_clash(Lie1,Lpt1,Li1,Lu1,Ls1,Abr) -> true
+    ;
+    resolution(Lie1,Lpt1,Li1,Lu1,Ls1,Abr)
+    ),
 
     write("Regle \u2A06 (branche 2) "), nl,
     affiche_assertion([(I, or(C1, C2))]), write("| --> "), nl,
@@ -204,7 +208,11 @@ transformation_or(Lie,Lpt,Li,[(I, or(C1, C2))|Lu],Ls,Abr) :-
 
     evolue((I, C2), Lie, Lpt, Li, Lu, Ls, Lie2, Lpt2, Li2, Lu2, Ls2),
     affiche_evolution_Abox(Ls, Lie, Lpt, Li, [(I, or(C1, C2))|Lu], Abr, Ls2, Lie2, Lpt2, Li2, Lu2, Abr),
-    is_clash(Lie2,Lpt2,Li2,Lu2,Ls2,Abr).
+    (is_clash(Lie2,Lpt2,Li2,Lu2,Ls2,Abr) -> true
+    ;
+    resolution(Lie2,Lpt2,Li2,Lu2,Ls2,Abr)
+    ).
+
 
 /*  -------------------------------------------------------
     Evolue : Permet d'ajouter des assertions dans un noeud

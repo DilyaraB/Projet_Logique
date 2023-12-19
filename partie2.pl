@@ -1,3 +1,4 @@
+compteur(1).
 
 programme :- premiere_etape(Tbox,Abi,Abr),
             deuxieme_etape(Abi,Abi1,Tbox),
@@ -17,7 +18,8 @@ premiere_etape(LTBox, LABox, LRoles) :-
 /* Partie 2 de l'énoncé (partiellement complété) */
 /* Abi = liste des assertions de concepts initiales,
    Abi1 = liste des asstions de concepts commpletee */
-deuxieme_etape(Abi, Abi1, _) :- saisie_et_traitement_prop_a_demontrer(Abi,Abi1,_).
+deuxieme_etape(Abi, Abi1, _) :- 
+    saisie_et_traitement_prop_a_demontrer(Abi,Abi1,_).
 
 /* Partie 3 de l'énoncé */
 troisieme_etape(Abi,Abr) :-
@@ -45,14 +47,14 @@ suite(_,Abi,Abi1,_) :-
 
 /* 1er cas */
 acquisition_prop_type1(Abi, Abi1, _) :-
-    write('Entrez l"identificateur de l"instance (par exemple, michelAnge) : '), read(Instance),
+    write('Entrez l\'identificateur de l\'instance (par exemple, michelAnge) : '), read(Instance),
     write('Entrez le concept (par exemple, personne) : '), 
     read(Concept),
     /* Vérifier si l''instance et concept existent */
     (instance(Instance), concept(Concept)  ->
         /* Processus de traitement de la proposition */
         process_prop_type1(Instance, Concept, Abi, Abi1);
-        nl, write('L\'instance ou le concept n\'existe pas. Veuillez réessayer.'), nl
+        nl, write("L'instance ou le concept n'existe pas. Veuillez réessayer."), nl, acquisition_prop_type1(Abi, Abi1, _)
     ).
 
 process_prop_type1(Instance, Concept, Abi, Abi1) :-
@@ -67,7 +69,8 @@ acquisition_prop_type2(Abi, Abi1, _) :-
     (concept(and(Concept1, Concept2))  ->
         /* Processus de traitement de la proposition */
         process_prop_type2(Concept1, Concept2, Abi, Abi1);
-        nl, write('L\'un ou/et deux de concepts n\'existe pas. Veuillez réessayer.'), nl
+        nl, write('L\'un ou/et deux de concepts n\'existe pas. Veuillez réessayer.'), nl,
+        acquisition_prop_type2(Abi, Abi1, _)
     ).
 
 /* dynamic compteur/1.
