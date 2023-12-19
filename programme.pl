@@ -416,7 +416,6 @@ deduction_all(Lie,[(I, all(R, C))|Lpt],Li,Lu,Ls,Abr) :-
 		nl
 	),
 
-    verif_new_abox(L, Ls),
     evolue_list(L, Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1),
     affiche_evolution_Abox(Ls, Lie, [(I, all(R, C))|Lpt], Li, Lu, Abr, Ls1, Lie1, Lpt1, Li1, Lu1, Abr),
     ( is_clash(Lie1,Lpt1,Li1,Lu1,Ls1,Abr) -> true
@@ -424,24 +423,6 @@ deduction_all(Lie,[(I, all(R, C))|Lpt],Li,Lu,Ls,Abr) :-
     resolution(Lie1,Lpt1,Li1,Lu1,Ls1,Abr)
     ).
 
-/* ∀ non fait (Un autre cas lorsqu'il n'y a pas de nouvelles instances) */
-deduction_all(Lie,[(I, all(R, C))|Lpt],Li,Lu,Ls,Abr) :-
-    transformation_or(Lie,[(I, all(R, C))|Lpt],Li,Lu,Ls,Abr),!.
-
-
-/*  -------------------------------------------------------
-    Vérifie si il existe de nouvelles instances, pour éviter d'avoir une boucle infinie
-    On essaiera la règle du OR si il n'existe de nouvelles assertions
-    ------------------------------------------------------- */
-
-verif_new_abox([], _) :-
-    write("Il n'y a pas de nouvelles instances pour \u2200."), nl,
-    !, fail.
-verif_new_abox([X|_], Ls) :-
-    \+ member(X, Ls),!.
-verif_new_abox([X|L], Ls) :-
-    member(X, Ls),
-    verif_new_abox(L, Ls),!.
 
 /*  _______________________________________
     TRANSFORMATION_OR : Règle ⊔
