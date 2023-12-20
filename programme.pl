@@ -251,7 +251,7 @@ acquisition_prop_type1(Abi, Abi1, Tbox) :-
     (instance(Instance), concept(Concept)  ->
         /* Processus de traitement de la proposition */
         process_prop_type1(Instance, Concept, Abi, Abi1);
-        nl, write("L'instance ou le concept n'existe pas. Veuillez réessayer."), nl, acquisition_prop_type1(Abi, Abi1, Tbox)
+        nl, write("L'instance ou le concept n'existe pas. Veuillez reessayer."), nl, acquisition_prop_type1(Abi, Abi1, Tbox)
     ).
 
 process_prop_type1(Instance, Concept, Abi, Abi1) :-
@@ -271,7 +271,7 @@ acquisition_prop_type2(Abi, Abi1, Tbox) :-
     (concept(and(Concept1, Concept2))  ->
         /* Processus de traitement de la proposition */
         process_prop_type2(Concept1, Concept2, Abi, Abi1);
-        nl, write('L\'un ou/et deux de concepts n\'existe pas. Veuillez réessayer.'), nl,
+        nl, write('L\'un ou/et deux de concepts n\'existe pas. Veuillez reessayer.'), nl,
         acquisition_prop_type2(Abi, Abi1, Tbox)
     ).
 
@@ -601,21 +601,21 @@ premiere_etape(LTBox, LABox, LRoles) :-
     setof((I1, I2), inst(I1, I2), Abi),        
     setof((I1, I2, R), instR(I1, I2, R), LRoles), 
     (verify_tbox(TBox) ->
-        write('Vérification de la TBox a réussi'), nl;
+        write('Verification de la TBox a reussi'), nl;
         write('Erreur de syntaxe dans la TBox'), nl, fail
     ), 
     (verify_abox(Abi), verify_abox(LRoles) ->
-        write('Vérification de la ABox a réussi'), nl;
+        write('Verification de la ABox a reussi'), nl;
         write('Erreur de syntaxe dans la ABox'), nl, fail
     ),
     /* recuperation des concepts complexes */
     setof(X, cnamena(X), Lcno),
     (maplist(pas_autoref, Lcno) ->
-        write('Vérification d\'auto-référencement a réussi'), nl;
+        write('Verification d\'auto-referencement a reussi'), nl;
         write('Precence de concept auto-referent dans la Tbox'), nl, fail
     ),
-    (traitement_box(TBox, LTBox),traitement_box(Abi, LABox) ->
-        write('Transformation des box a réussi'), nl;
+    (traitement_Tbox(TBox, LTBox),traitement_Abox(Abi, LABox) ->
+        write('Transformation des box a reussi'), nl;
         write('Erreur dans transformation'), nl, fail
     ).
 
