@@ -65,12 +65,12 @@ chiffre_car(9,'9').
     Jeux de tests
     ======================================================================== */
 
+
 /* TBox */
 equiv(sculpteur,and(personne,some(aCree,sculpture))).
 equiv(auteur,and(personne,some(aEcrit,livre))).
 equiv(editeur,and(personne,and(not(some(aEcrit,livre)),some(aEdite,livre)))).
 equiv(parent,and(personne,some(aEnfant,anything))).
-
 /* Concepts atomiques */
 cnamea(personne).
 cnamea(livre).
@@ -78,37 +78,33 @@ cnamea(objet).
 cnamea(sculpture).
 cnamea(anything).
 cnamea(nothing).
-
 /* Concepts non-atomiques */
 cnamena(auteur).
 cnamena(editeur).
 cnamena(sculpteur).
 cnamena(parent).
-
 /* Instances */
 iname(michelAnge).
 iname(david).
 iname(sonnets).
 iname(vinci).
 iname(joconde).
-
 /* Rôles */
 rname(aCree).
 rname(aEcrit).
 rname(aEdite).
 rname(aEnfant).
-
 /* ABox a : c */
 inst(michelAnge,personne).
 inst(david,sculpture).
 inst(sonnets,livre).
 inst(vinci,personne).
 inst(joconde,objet).
-
 /* ABox a, b : c */
 instR(michelAnge, david, aCree).
 instR(michelAnge, sonnets, aEcrit).
 instR(vinci, joconde, aCree).
+
 
 /*  ========================================================================
     Partie 1 - Verification de la Tbox et la Abox
@@ -200,11 +196,19 @@ replace_concept(some(R, C), some(R, SimplifiedC), Visited) :-
 replace_concept(all(R, C), all(R, SimplifiedC), Visited) :-
     replace_concept(C, SimplifiedC, Visited).
 
-traitement_box([], []).
-traitement_box([(X, Concept) | Rest], [(X, NewConcept) | Result]) :-
+traitement_Tbox([], []).
+traitement_Tbox([(X, Concept) | Rest], [(X, NewConcept) | Result]) :-
+    concept(X),
     replace_concept(Concept, Atomique, []),
     nnf(Atomique, NewConcept),
-    traitement_box(Rest, Result), !.
+    traitement_Tbox(Rest, Result), !.
+
+traitement_Abox([], []).
+traitement_Abox([(I, Concept) | Rest], [(I, NewConcept) | Result]) :-
+    instance(I),
+    replace_concept(Concept, Atomique, []),
+    nnf(Atomique, NewConcept),
+    traitement_Abox(Rest, Result), !.
 
 /*  ========================================================================
     Partie 2 - Saisie de la proposition à demontrer
