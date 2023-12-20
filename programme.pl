@@ -600,11 +600,11 @@ premiere_etape(LTBox, LABox, LRoles) :-
     setof((C, D), equiv(C, D), TBox),       
     setof((I1, I2), inst(I1, I2), Abi),        
     setof((I1, I2, R), instR(I1, I2, R), LRoles), 
-    (verify_tbox(TBox) ->
+    (concept(TBox) ->
         write('Verification de la TBox a reussi'), nl;
         write('Erreur de syntaxe dans la TBox'), nl, fail
     ), 
-    (verify_abox(Abi), verify_abox(LRoles) ->
+    (concept(Abi), concept(LRoles) ->
         write('Verification de la ABox a reussi'), nl;
         write('Erreur de syntaxe dans la ABox'), nl, fail
     ),
