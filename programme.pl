@@ -175,7 +175,7 @@ pas_autoref(Concept) :-
     ------------------------------------------------------- */
 
 /* si le concept est atomique alors concept simplifie est lui meme */
-replace_concept(AtomicC, AtomicC, _) :- cnamea(AtomicC).
+replace_concept(AtomicC, AtomicC, _) :- cnamea(AtomicC), !.
 
 replace_concept(ComplexC, SimplifiedC, Visited) :-
     /* on verifie bien si le concept est visité deja pour eviter boucle infini, on trouve sa definiton, apres on continue recursivement remplacer les autres concepts non atomique dans la definition */ 
@@ -233,6 +233,7 @@ suite(R,Abi,Abi1,Tbox) :-
     ------------------------------------------------------- */
 
 acquisition_prop_type1(Abi, Abi1, Tbox) :-
+    nl,
     write('Entrez l\'identificateur de l\'instance (par exemple, michelAnge) : '), read(Instance),
     write('Entrez le concept (par exemple, personne) : '), 
     read(Concept),
@@ -254,6 +255,7 @@ process_prop_type1(Instance, Concept, Abi, Abi1) :-
     ------------------------------------------------------- */
 
 acquisition_prop_type2(Abi, Abi1, Tbox) :-
+    nl,
     write('Entrez le premier concept (par exemple, personne) : '), read(Concept1),
     write('Entrez le deuxieme concept (par exemple, livre) : '), read(Concept2),
     (concept(and(Concept1, Concept2))  ->
@@ -332,7 +334,7 @@ resolution([],Lpt,[],[],Ls, Abr):-
 is_clash(Lie, Lpt, Li, Lu, [(I, C) | Ls], Abr) :-
     nnf(not(C), NC),
     (member((I, NC), Ls) ->
-        write('\e[31m   CLASH !\e[0m'), nl,
+        write('\e[32mCLASH !\e[0m'), nl,
         affiche_assertion([(I, C), (I, NC)]),
         affiche_evolution_Abox([], [], [], [], [], [], [(I, C) | Ls], Lie, Lpt, Li, Lu, Abr)
     ;
