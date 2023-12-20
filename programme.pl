@@ -320,8 +320,8 @@ resolution([],[],[],[],[],[]).
 resolution(Lie,Lpt,Li,Lu,Ls,Abr) :-
     complete_some(Lie,Lpt,Li,Lu,Ls,Abr), !.
 
-resolution([],Lpt,[],[],Ls, Abr):-
-	is_clash([],Lpt,[],[],Ls, Abr), !.
+resolution([],[],[],[],Ls, Abr):-
+	is_clash([],[],[],[],Ls, Abr), !.
 
 resolution([],Lpt,[],[],Ls, Abr):-
 	\+ is_clash([],Lpt,[],[],Ls, Abr), !, 
